@@ -6,8 +6,14 @@
 /public/storage
 /storage/*.key
 /vendor
-
+/config
+/docker
+/lang
+/tests
+/index.php
+/bootstrap/cache
 # .env
+.env
 .env.backup
 .env.production
 .phpunit.result.cache
@@ -38,3 +44,5 @@ yarn-error.log
 /storage/*.key
 .env
 .phpunit.result.cache
+.phpunit.xml
+
