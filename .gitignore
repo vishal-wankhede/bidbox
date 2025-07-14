@@ -38,6 +38,7 @@ yarn-error.log
 /public/assets/css
 /public/assets/vendor
 
+*.zip
 /vendor
 /node_modules
 /public/storage
@@ -45,4 +46,3 @@ yarn-error.log
 .env
 .phpunit.result.cache
 .phpunit.xml
-
