@@ -1,0 +1,16 @@
+{
+  "menu": [
+    {
+      "url": "/",
+      "name": "Home",
+      "icon": "menu-icon tf-icons mdi mdi-home-outline",
+      "slug": "pages-home"
+    },
+    {
+      "url": "/page-2",
+      "icon": "menu-icon tf-icons mdi mdi-file-document-outline",
+      "name": "Page 2",
+      "slug": "pages-page-2"
+    }
+  ]
+}
