@@ -135,6 +135,7 @@ Route::prefix('analytics')->group(function () {
   Route::get('/testcron', [AnalyticsController::class, 'testcron'])->name('analytics.testcron');
 });
 
+//new routes
 Route::get('/filtervaluesall',function () {
   return FilterValue::get();
 });
