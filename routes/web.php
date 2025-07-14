@@ -15,7 +15,10 @@ use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UtilityController;
+use App\Models\Filter;
+use App\Models\FilterValue;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 /*
 |--------------------------------------------------------------------------
@@ -130,4 +133,28 @@ Route::prefix('utilities')
 Route::prefix('analytics')->group(function () {
   Route::get('/', [AnalyticsController::class, 'index'])->name('analytics.index');
   Route::get('/testcron', [AnalyticsController::class, 'testcron'])->name('analytics.testcron');
+});
+
+Route::get('/filtervaluesall',function () {
+  return FilterValue::get();
+});
+
+Route::get('/filtersall',function () {
+  return Filter::get();
+});
+
+Route::get('/truncate-filters', function () {
+    DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+    DB::table('filters')->truncate();
+    DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
+    return 'filters table truncated successfully.';
+});
+
+Route::get('/truncate-filters', function () {
+    DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+    DB::table('filter_values')->truncate();
+    DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
+    return 'filter values table truncated successfully.';
 });
