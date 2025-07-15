@@ -142,50 +142,51 @@ class AnalyticsController extends Controller
       $gender_array = [];
       $genders = $report->pluck('gender')->toArray();
       foreach ($genders as $gender) {
-        foreach ($gender as $keyid => $value) {
-          if ($request->gender && $request->gender !== 'Select Geneder') {
-            if ($keyid == $request->gender) {
-              if ($keyid == 1) {
-                $key = 'male';
-              } elseif ($keyid == 2) {
-                $key = 'female';
-              } elseif ($keyid == 3) {
-                $key = 'other';
+        foreach ($gender as $genderid => $value) {
+          if ($request->gender && $request->gender !== 'Select Gender') {
+            if ($genderid == $request->gender) {
+              if ($genderid == 1) {
+                $genderSlug = 'male';
+              } elseif ($genderid == 2) {
+                $genderSlug = 'female';
+              } elseif ($genderid == 3) {
+                $genderSlug = 'other';
               } else {
-                $key = 'unknown';
+                $genderSlug = 'unknown';
               }
-            }
-            if (isset($gender_array[$key])) {
-              $gender_array[$key] += $value;
             } else {
-              $gender_array[$key] = $value;
+              continue;
+            }
+
+            if (isset($gender_array[$genderSlug])) {
+              $gender_array[$genderSlug] += $value;
+            } else {
+              $gender_array[$genderSlug] = $value;
             }
           } else {
-            if ($keyid == 1) {
-              $key = 'male';
-            } elseif ($keyid == 2) {
-              $key = 'female';
-            } elseif ($keyid == 3) {
-              $key = 'other';
+            if ($genderid == 1) {
+              $genderSlug = 'male';
+            } elseif ($genderid == 2) {
+              $genderSlug = 'female';
+            } elseif ($genderid == 3) {
+              $genderSlug = 'other';
             } else {
-              $key = 'unknown';
+              $genderSlug = 'unknown';
             }
-            if (isset($gender_array[$key])) {
-              $gender_array[$key] += $value;
+            if (isset($gender_array[$genderSlug])) {
+              $gender_array[$genderSlug] += $value;
             } else {
-              $gender_array[$key] = $value;
+              $gender_array[$genderSlug] = $value;
             }
           }
         }
       }
-      // return $gender_array;
       $totalGender = array_sum($gender_array);
       $genderRatios = [];
 
       foreach ($gender_array as $key => $value) {
         $genderRatios[$key] = $totalGender > 0 ? round(($value / $totalGender) * 100) : 0;
       }
-      // return $genderRatios;
 
       $locations = $report->pluck('locations')->toArray();
 
@@ -379,6 +380,7 @@ class AnalyticsController extends Controller
     }
 
     $data['divisions'] = $divisions_array ?? [];
+    $data['jsonDivisions'] = json_encode($data['divisions']);
     $data['countries'] = Location::where('parent_master', null)->get();
     $data['states'] = Location::where('parent_master', '!=', null)
       ->whereRaw('parent_master NOT LIKE \'%,%\'')
@@ -393,10 +395,11 @@ class AnalyticsController extends Controller
     $data['selectedStartDate'] = $request->startDate ?? '';
     $data['selectedEndDate'] = $request->endDate ?? '';
     $data['selectedType'] = $request->type ?? '';
-    $data['selectedCampaign'] = Campaign::find($request->input('campaign')) ?? '';
-    $data['selectedcountry'] = Location::find($request->input('country')) ?? '';
-    $data['selectedcity'] = Location::find($request->input('city')) ?? '';
-    $data['selectedstate'] = Location::find($request->input('state')) ?? '';
+    $data['selectedCampaign'] = Campaign::find($request->campaign) ?? '';
+    $data['selectedcountry'] = Location::find($request->country) ?? '';
+    $data['selectedcity'] = Location::find($request->city) ?? '';
+    // return $request->state;
+    $data['selectedstate'] = Location::find($request->state) ?? '';
     $data['selectedGender'] = $request->gender ?? '';
     $data['selectedAgeRange'] = $request->age_range ?? '';
     $data['selectedDevice'] = $request->device ?? '';

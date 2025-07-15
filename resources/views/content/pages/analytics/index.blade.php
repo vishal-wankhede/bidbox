@@ -527,6 +527,143 @@
         });
     </script>
 
+    {{-- <script>
+        const divisions = {!! $jsonDivisions !!};
+        const selectedItems = {};
+
+        function toggleDropdown(id) {
+            document.getElementById(id).classList.toggle('active');
+        }
+
+        function renderChips(type) {
+            const container = document.getElementById(`${type}SelectedDisplay`);
+            container.innerHTML = '';
+            Object.entries(selectedItems[type] || {}).forEach(([id, title]) => {
+                const chip = document.createElement('div');
+                chip.className = 'chip';
+                chip.innerHTML =
+                    `<span>${title}</span><span class="remove" onclick="removeItem('${type}', ${id})">✕</span>`;
+                container.appendChild(chip);
+            });
+        }
+
+        function removeItem(type, id) {
+            delete selectedItems[type][id];
+            const input = document.getElementById(`${type}-${id}`);
+            if (input) input.checked = false;
+            renderChips(type);
+        }
+
+        function handleCheckChange(e, type, id, title) {
+            if (!selectedItems[type]) selectedItems[type] = {};
+            if (e.target.checked) {
+                selectedItems[type][id] = title;
+            } else {
+                delete selectedItems[type][id];
+            }
+            renderChips(type);
+        }
+
+        function renderDropdown(type, values) {
+            const container = document.getElementById(`${type}Dropdown`);
+            container.innerHTML = '';
+
+            Object.entries(values).forEach(([groupKey, groupVal]) => {
+                const groupDiv = document.createElement('div');
+                groupDiv.classList.add('mb-2');
+
+                const groupLabel = document.createElement('div');
+                groupLabel.classList.add('category-label', 'cursor-pointer');
+                groupLabel.innerText = groupKey;
+                groupLabel.style.cursor = 'pointer';
+
+                const groupWrapper = document.createElement('div');
+                groupWrapper.classList.add('ps-3', 'd-none');
+
+                groupLabel.onclick = () => {
+                    groupWrapper.classList.toggle('d-none');
+                };
+
+                if (Array.isArray(groupVal)) {
+                    // Direct array, render checkboxes
+                    groupVal.forEach(item => {
+                        const itemDiv = createCheckboxItem(type, item);
+                        groupWrapper.appendChild(itemDiv);
+                    });
+                } else {
+                    // Nested structure (e.g., B2B → Job → items)
+                    Object.entries(groupVal).forEach(([subGroupKey, items]) => {
+                        const subGroupLabel = document.createElement('div');
+                        subGroupLabel.classList.add('form-check', 'cursor-pointer');
+                        subGroupLabel.innerText = subGroupKey;
+                        subGroupLabel.style.cursor = 'pointer';
+
+                        const itemWrapper = document.createElement('div');
+                        itemWrapper.classList.add('ps-3', 'd-none');
+
+                        subGroupLabel.onclick = () => {
+                            itemWrapper.classList.toggle('d-none');
+                        };
+
+                        items.forEach(item => {
+                            const itemDiv = createCheckboxItem(type, item);
+                            itemWrapper.appendChild(itemDiv);
+                        });
+
+                        groupWrapper.appendChild(subGroupLabel);
+                        groupWrapper.appendChild(itemWrapper);
+                    });
+                }
+
+                groupDiv.appendChild(groupLabel);
+                groupDiv.appendChild(groupWrapper);
+                container.appendChild(groupDiv);
+            });
+        }
+
+
+        function createCheckboxItem(type, item) {
+            const itemDiv = document.createElement('div');
+            itemDiv.classList.add('form-check', 'form-check-sub');
+
+            const input = document.createElement('input');
+            input.type = 'checkbox';
+            input.className = 'form-check-input';
+            input.id = `${type}-${item.id}`;
+            input.onchange = (e) => handleCheckChange(e, type, item.id, item.title);
+
+            const label = document.createElement('label');
+            label.className = 'form-check-label';
+            label.setAttribute('for', `${type}-${item.id}`);
+            label.innerText = item.title;
+
+            itemDiv.appendChild(input);
+            itemDiv.appendChild(label);
+            return itemDiv;
+        }
+
+        // Initialize after DOM loads
+        document.addEventListener('DOMContentLoaded', () => {
+            divisions.forEach(division => {
+                const type = division.label.toLowerCase();
+                selectedItems[type] = {};
+                console.log(type)
+                renderDropdown(type, division.values);
+            });
+
+            // Close dropdowns on outside click
+            document.addEventListener('click', (e) => {
+                document.querySelectorAll('.form-multiselect').forEach(drop => {
+                    if (!drop.contains(e.target)) {
+                        drop.classList.remove('active');
+                    }
+                });
+            });
+        });
+    </script> --}}
+
+
+
 @endsection
 @section('content')
     <div class="container-fluid py-4">
@@ -591,20 +728,22 @@
                         <select name="campaign" class="form-select">
                             <option>Select Campaign</option>
                             @foreach ($campaigns as $campaign)
-                                <option value="{{ $campaign->id }}" @if ($selectedCampaign ?? $selectedCampaign->id == $campaign->id) selected @endif>
-                                    {{ $campaign->campaign_name }}</option>
+                                <option value="{{ $campaign->id }}" @if (is_object($selectedCampaign) && $selectedCampaign->id == $campaign->id) selected @endif>
+                                    {{ $campaign->campaign_name }}
+                                </option>
                             @endforeach
                         </select>
                     </div>
 
-                    <!-- countries -->
+                    <!-- Countries -->
                     <div class="col-md-2">
                         <label class="form-label">Countries</label>
                         <select name="country" class="form-select">
                             <option>Select country</option>
                             @foreach ($countries as $country)
-                                <option value="{{ $country->id }}"@if ($selectedcountry ?? $selectedcountry->id == $country->id) selected @endif>
-                                    {{ $country->name }}</option>
+                                <option value="{{ $country->id }}" @if (is_object($selectedcountry) && $selectedcountry->id == $country->id) selected @endif>
+                                    {{ $country->name }}
+                                </option>
                             @endforeach
                         </select>
                     </div>
@@ -615,8 +754,9 @@
                         <select name="state" class="form-select">
                             <option>Select State</option>
                             @foreach ($states as $state)
-                                <option value="{{ $state->id }}"@if ($selectedstate ?? $selectedstate->id == $state->id) selected @endif>
-                                    {{ $state->name }}</option>
+                                <option value="{{ $state->id }}" @if (is_object($selectedstate) && $selectedstate->id == $state->id) selected @endif>
+                                    {{ $state->name }}
+                                </option>
                             @endforeach
                         </select>
                     </div>
@@ -627,20 +767,22 @@
                         <select name="city" class="form-select">
                             <option>Select City</option>
                             @foreach ($cities as $city)
-                                <option value="{{ $city->id }}"@if ($selectedcity ?? $selectedcity->id == $city->id) selected @endif>
-                                    {{ $city->name }}</option>
+                                <option value="{{ $city->id }}" @if (is_object($selectedcity) && $selectedcity->id == $city->id) selected @endif>
+                                    {{ $city->name }}
+                                </option>
                             @endforeach
                         </select>
                     </div>
+
 
                     <!-- Gender -->
                     <div class="col-md-2">
                         <label class="form-label">Gender</label>
                         <select name="gender" class="form-select">
                             <option>Select Gender</option>
-                            <option value="1" @if ($selectedGender ?? $selectedGender == 1) selected @endif>Male</option>
-                            <option value="2" @if ($selectedGender ?? $selectedGender == 2) selected @endif>Female</option>
-                            <option value="3" @if ($selectedGender ?? $selectedGender == 3) selected @endif>Other</option>
+                            <option value="1" @if ($selectedGender == 1) selected @endif>Male</option>
+                            <option value="2" @if ($selectedGender == 2) selected @endif>Female</option>
+                            <option value="3" @if ($selectedGender == 3) selected @endif>Other</option>
                         </select>
                     </div>
                 </div>
@@ -659,11 +801,8 @@
                         </div>
                     @endforeach
 
-                    {{-- <pre>{{ json_encode($divisions, JSON_PRETTY_PRINT) }}</pre>
-                    @foreach ($divisions as $division)
-                        @php
-                            $type = strtolower($division['label']); // cohort or inventory
-                        @endphp
+                    {{-- @foreach ($divisions as $division)
+                        @php $type = strtolower($division['label']); @endphp
 
                         <label class="form-label">{{ $division['label'] }}</label>
                         <div class="form-multiselect mb-4" id="{{ $type }}Select">
@@ -675,6 +814,7 @@
 
                         <div id="{{ $type }}HiddenInputs"></div>
                     @endforeach --}}
+
 
                 </div>
 
