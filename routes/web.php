@@ -135,27 +135,3 @@ Route::prefix('analytics')->group(function () {
   Route::get('/testcron', [AnalyticsController::class, 'testcron'])->name('analytics.testcron');
 });
 
-//new routes
-Route::get('/filtervaluesall',function () {
-  return FilterValue::get();
-});
-
-Route::get('/filtersall',function () {
-  return Filter::get();
-});
-
-Route::get('/truncate-filters', function () {
-    DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-    DB::table('filters')->truncate();
-    DB::statement('SET FOREIGN_KEY_CHECKS=1;');
-
-    return 'filters table truncated successfully.';
-});
-
-Route::get('/truncate-filters', function () {
-    DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-    DB::table('filter_values')->truncate();
-    DB::statement('SET FOREIGN_KEY_CHECKS=1;');
-
-    return 'filter values table truncated successfully.';
-});

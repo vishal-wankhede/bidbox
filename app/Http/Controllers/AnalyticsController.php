@@ -18,6 +18,7 @@ class AnalyticsController extends Controller
 {
   public function index(Request $request)
   {
+    // return $request->all();
     $data = [];
 
     // Campaign selected
@@ -25,9 +26,50 @@ class AnalyticsController extends Controller
       $campaign = Campaign::find($request->campaign);
       $report = ReportLog::where('campaign_id', $request->campaign);
 
-      // Filter by location if selected
-      if ($request->location && $request->location !== 'Select Location') {
-        $report = $report->where('locations', 'like', '%' . $request->location . '%');
+      // // Filter by location if selected
+      // if ($request->country && $request->country !== 'Select country') {
+      //   $report = $report->where('locations', 'like', '%' . $request->country . '%');
+      // }
+
+      //Fiter by date range
+      if ($request->dateRange && $request->dateRange !== 'Select Date Range') {
+        $dateRange = $request->dateRange;
+        if ($dateRange === 'month') {
+          $startDate = Carbon::now()
+            ->startOfMonth()
+            ->startOfDay();
+          $endDate = Carbon::now()
+            ->endOfMonth()
+            ->endOfDay();
+        } elseif ($dateRange === '7') {
+          $startDate = Carbon::now()
+            ->subDays(6)
+            ->startOfDay();
+          $endDate = Carbon::now()->endOfDay();
+        } elseif ($dateRange === '30') {
+          $startDate = Carbon::now()
+            ->subDays(29)
+            ->startOfDay();
+          $endDate = Carbon::now()->endOfDay();
+        } elseif ($dateRange === 'custom') {
+          $startDate = Carbon::parse($request->startDate)->startOfDay();
+          $endDate = Carbon::parse($request->endDate)->endOfDay();
+          if (!$startDate || !$endDate) {
+            return redirect()
+              ->back()
+              ->with('error', 'Invalid date range selected.');
+          }
+          if ($startDate->greaterThan($endDate)) {
+            return redirect()
+              ->back()
+              ->with('error', 'Start date cannot be greater than end date.');
+          }
+        } else {
+          // Default to today if no valid range is selected
+          $startDate = Carbon::today()->startOfDay();
+          $endDate = Carbon::today()->endOfDay();
+        }
+        $report = $report->whereBetween('created_at', [$startDate, $endDate]);
       }
 
       // Filter by report type (hourly/daily)
@@ -101,44 +143,104 @@ class AnalyticsController extends Controller
       $genders = $report->pluck('gender')->toArray();
       foreach ($genders as $gender) {
         foreach ($gender as $keyid => $value) {
-          if ($keyid == 1) {
-            $key = 'male';
-          } elseif ($keyid == 2) {
-            $key = 'female';
-          } elseif ($keyid == 3) {
-            $key = 'other';
+          if ($request->gender && $request->gender !== 'Select Geneder') {
+            if ($keyid == $request->gender) {
+              if ($keyid == 1) {
+                $key = 'male';
+              } elseif ($keyid == 2) {
+                $key = 'female';
+              } elseif ($keyid == 3) {
+                $key = 'other';
+              } else {
+                $key = 'unknown';
+              }
+            }
+            if (isset($gender_array[$key])) {
+              $gender_array[$key] += $value;
+            } else {
+              $gender_array[$key] = $value;
+            }
           } else {
-            $key = 'unknown';
-          }
-          if (isset($gender_array[$key])) {
-            $gender_array[$key] += $value;
-          } else {
-            $gender_array[$key] = $value;
+            if ($keyid == 1) {
+              $key = 'male';
+            } elseif ($keyid == 2) {
+              $key = 'female';
+            } elseif ($keyid == 3) {
+              $key = 'other';
+            } else {
+              $key = 'unknown';
+            }
+            if (isset($gender_array[$key])) {
+              $gender_array[$key] += $value;
+            } else {
+              $gender_array[$key] = $value;
+            }
           }
         }
       }
+      // return $gender_array;
       $totalGender = array_sum($gender_array);
       $genderRatios = [];
 
       foreach ($gender_array as $key => $value) {
         $genderRatios[$key] = $totalGender > 0 ? round(($value / $totalGender) * 100) : 0;
       }
+      // return $genderRatios;
 
       $locations = $report->pluck('locations')->toArray();
-      $locationArray = [];
-      foreach ($locations as $location) {
-        foreach ($location as $keyid => $value) {
-          $locationKey = Location::where('id', $keyid)->value('name');
-          if (!$locationKey) {
+
+      $locationArray = [
+        'countries' => [],
+        'states' => [],
+        'cities' => [],
+      ];
+      $newArrayLocations = [];
+
+      foreach ($locations as $locationSet) {
+        foreach ($locationSet as $locationId => $value) {
+          $location = Location::find($locationId);
+          if (!$location) {
             continue;
           }
-          if (isset($locationArray[$locationKey])) {
-            $locationArray[$locationKey] += $value;
+
+          $impressions = $value;
+
+          // COUNTRY LEVEL (No parent_master)
+          if ($location->parent_master === null) {
+            continue; // Skip if no parent_master
+          }
+          if (isset($newArrayLocations[$location->id])) {
+            $newArrayLocations[$location->id] += $impressions;
           } else {
-            $locationArray[$locationKey] = $value;
+            $newArrayLocations[$location->id] = $impressions;
+          }
+          $parents = explode(',', $location->parent_master);
+          foreach ($parents as $parent) {
+            if (isset($newArrayLocations[$parent])) {
+              $newArrayLocations[$parent] += $impressions;
+            } else {
+              $newArrayLocations[$parent] = $impressions;
+            }
           }
         }
       }
+      foreach ($newArrayLocations as $locationId => $impressions) {
+        $location = Location::find($locationId);
+        if (!$location) {
+          continue; // Skip if location not found
+        }
+        if ($location->parent_master === null) {
+          // Country level
+          $locationArray['countries'][$location->name] = $impressions;
+        } elseif (strpos($location->parent_master, ',') === false) {
+          // State level (single parent)
+          $locationArray['states'][$location->name] = $impressions;
+        } else {
+          // City level (multiple parents)
+          $locationArray['cities'][$location->name] = $impressions;
+        }
+      }
+      // return [$locations, $newArrayLocations,$locationArray];
 
       $InventoryFilter = Filter::where('title', 'Inventories')->first();
       $CohortFilter = Filter::where('title', 'Cohorts')->first();
@@ -287,6 +389,10 @@ class AnalyticsController extends Controller
       ->with('filter_values')
       ->get();
 
+    $data['selectedDateRange'] = $request->dateRange ?? '';
+    $data['selectedStartDate'] = $request->startDate ?? '';
+    $data['selectedEndDate'] = $request->endDate ?? '';
+    $data['selectedType'] = $request->type ?? '';
     $data['selectedCampaign'] = Campaign::find($request->input('campaign')) ?? '';
     $data['selectedcountry'] = Location::find($request->input('country')) ?? '';
     $data['selectedcity'] = Location::find($request->input('city')) ?? '';
