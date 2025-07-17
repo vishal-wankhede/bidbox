@@ -662,8 +662,6 @@
         });
     </script> --}}
 
-
-
 @endsection
 @section('content')
     <div class="container-fluid py-4">

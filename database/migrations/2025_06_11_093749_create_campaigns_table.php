@@ -24,8 +24,8 @@ return new class extends Migration {
       $table->json('gender')->nullable(); // array of gender IDs
       $table->json('filtervalues')->nullable(); // selected filters
       $table->json('division_value')->nullable(); // nested division data
-      $table->timestamps();
       $table->string('status')->default('active');
+      $table->timestamps();
     });
   }
 

@@ -137,6 +137,12 @@ $configData = Helper::appClasses();
             </a>
         </li> --}}
 
+        <li class="menu-item {{ request()->routeIs('utilities.masters.index') ? 'active' : '' }}">
+            <a href="{{ route('utilities.masters.index') }}" class="menu-link">
+                <div>Masters</div>
+            </a>
+        </li>
+
         <li class="menu-item {{ request()->routeIs('utilities.filters') ? 'active' : '' }}">
             <a href="{{ route('utilities.filters') }}" class="menu-link">
                 <div>Filters</div>

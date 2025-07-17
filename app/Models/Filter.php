@@ -15,4 +15,5 @@ class Filter extends Model
   {
     return $this->hasMany(FilterValue::class, 'filter_id');
   }
+  
 }

@@ -13,12 +13,10 @@ use App\Http\Controllers\CohortsController;
 use App\Http\Controllers\FilterController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\LocationController;
+use App\Http\Controllers\MasterController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UtilityController;
-use App\Models\Filter;
-use App\Models\FilterValue;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 /*
 |--------------------------------------------------------------------------
@@ -128,10 +126,17 @@ Route::prefix('utilities')
     Route::post('/getchildlocations', [LocationController::class, 'getChildLocations']);
 
     Route::get('/getfilterdetails', [LocationController::class, 'getfilterdetails'])->name('getfilterdetails');
+
+    //masters
+    Route::get('/masters', [MasterController::class, 'index'])->name('masters.index');
+    Route::post('/masters/store', [MasterController::class, 'store'])->name('masters.store');
+    Route::get('/masters/addDetails/{master_id}/{filter_id?}', [MasterController::class, 'addDetails'])->name(
+      'masters.addDetails'
+    );
+    Route::post('/masters/storeDetails', [MasterController::class, 'storeDetails'])->name('masters.storeDetails');
   });
 
 Route::prefix('analytics')->group(function () {
   Route::get('/', [AnalyticsController::class, 'index'])->name('analytics.index');
   Route::get('/testcron', [AnalyticsController::class, 'testcron'])->name('analytics.testcron');
 });
-
