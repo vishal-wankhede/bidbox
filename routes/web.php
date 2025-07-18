@@ -16,6 +16,7 @@ use App\Http\Controllers\LocationController;
 use App\Http\Controllers\MasterController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UtilityController;
+use App\Models\MasterData;
 use Illuminate\Support\Facades\Auth;
 
 /*
@@ -134,6 +135,11 @@ Route::prefix('utilities')
       'masters.addDetails'
     );
     Route::post('/masters/storeDetails', [MasterController::class, 'storeDetails'])->name('masters.storeDetails');
+    Route::get('/masters/load-filter-values/{filterValueId}/{master_id}', [
+      MasterController::class,
+      'loadFilterValues',
+    ]);
+    Route::get('/masters/Syncdata/{master_id}', [MasterController::class, 'Syncdata'])->name('masters.Syncdata');
   });
 
 Route::prefix('analytics')->group(function () {

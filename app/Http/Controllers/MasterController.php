@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Filter;
 use App\Models\FilterValue;
+use App\Models\Location;
 use App\Models\Master;
 use App\Models\MasterData;
+use App\Models\MasterLocationDetail;
 use Dotenv\Validator;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator as FacadesValidator;
 use Yoeunes\Toastr\Facades\Toastr;
@@ -101,6 +104,7 @@ class MasterController extends Controller
         ];
       }
     }
+    $max_order = Filter::orderBy('filter_order', 'desc')->first();
     // return $saved_data;
     $master = Master::find($master_id);
     $data = [
@@ -108,6 +112,7 @@ class MasterController extends Controller
       'filter' => $filter,
       'filter_parent' => $filter_parent ?? null,
       'saved_data' => $saved_data_arr,
+      'last_data' => $max_order->filter_order == $filter->filter_order ? 1 : 0,
     ];
     // return $data;
     return view('content.utilities.masters.addDetails', $data);
@@ -143,6 +148,7 @@ class MasterController extends Controller
       MasterData::create([
         'master_id' => $request->master_id,
         'filter_id' => $request->Filter_id,
+        'parent_value_id' => $request->Filter_parent_id ?? $value_id,
         'filter_value_id' => $value_id,
         'male' => $genderValues['male'],
         'female' => $genderValues['female'],
@@ -153,5 +159,123 @@ class MasterController extends Controller
 
     Toastr::success('Details stored successfully', 'Success');
     return redirect()->back();
+  }
+
+  public function loadFilterValues($filterValueId, $master_id)
+  {
+    // return $filterValueId;
+    $filterValue = FilterValue::findOrFail($filterValueId);
+    $filter = Filter::find($filterValue->filter_id);
+
+    // Handle comma-separated parent_master (optional logic to adjust if needed)
+    if (strpos($filter->parent_master, ',')) {
+      $str = explode(',', $filter->parent_master);
+      $first = $str[0];
+      $filter = Filter::find($first);
+    }
+
+    // Keep going up until filter_order == 0
+    while ($filter && $filter->filter_order == 0) {
+      $filter = Filter::find($filter->parent_id);
+    }
+
+    $order = $filter->filter_order - 1;
+
+    $filter_parent = Filter::with('filter_values')
+      ->where('filter_order', $order)
+      ->first();
+    if ($filter_parent->child == 1) {
+      $childFilters = Filter::whereRaw('FIND_IN_SET(?, parent_master)', [$filter_parent->id])->get();
+      $childValues = [];
+      foreach ($childFilters as $childFilter) {
+        $values = FilterValue::where('filter_id', $childFilter->id)->get();
+        $childValues = array_merge($childValues, $values->toArray());
+      }
+      $filterValues = collect($childValues); // Convert to collection for consistency
+    } else {
+      $filterValues = $filter_parent->filter_values;
+    }
+
+    // return gettype($filterValues);
+    // Optional: load saved data if exists
+    $savedData = []; // get saved data from your logic here
+    foreach ($filterValues as $child) {
+      // return $child;
+      $data = MasterData::where('parent_value_id', $filterValueId)
+        // ->where('filter_id', $filterValue->filter_id)
+        ->where('master_id', $master_id)
+        ->get();
+      if ($data->isNotEmpty()) {
+        foreach ($data as $item) {
+          $savedData[$item->filter_value_id] = [
+            'male' => $item->male,
+            'female' => $item->female,
+            'other' => $item->other,
+          ];
+        }
+      }
+    }
+    // return $savedData;
+    return response()->json([
+      'data' => $filterValues->map(function ($child) use ($savedData) {
+        $id = $child['id'];
+        return [
+          'id' => $id,
+          'title' => $child['title'],
+          'male' => $savedData[$id]['male'] ?? 0,
+          'female' => $savedData[$id]['female'] ?? 0,
+          'other' => $savedData[$id]['other'] ?? 0,
+        ];
+      }),
+      'savedData' => count($savedData) > 0 ? true : false,
+    ]);
+  }
+
+  public function Syncdata($master_id)
+  {
+    if ($master_id != 0) {
+      if (MasterLocationDetail::where('master_id', $master_id)->exists()) {
+        Toastr::warning('warning', 'Master Data already synced .Please create new master');
+        return redirect()->route('utilities.masters.index');
+      }
+      $filterValues = FilterValue::pluck('id')->toArray();
+      $saved_data = MasterData::where('master_id', $master_id)
+        ->pluck('parent_value_id')
+        ->toArray();
+      $diff = array_diff($filterValues, $saved_data);
+      if (count($diff) > 0) {
+        Toastr::error('Please Check some Filter data is left to be added');
+        return redirect()->route('utilities.masters.index');
+      } else {
+        $locations = Location::all();
+        $master_data = MasterData::where('master_id', $master_id)->get();
+        try {
+          // foreach ($locations as $location) {
+          //   foreach ($master_data as $item) {
+          //     return $location->male;
+          //     MasterLocationDetail::create([
+          //       'master_id' => $master_id,
+          //       'filter_id' => $item->filter_id,
+          //       'parent_value_id' => $item->parent_value_id,
+          //       'filter_value_id' => $item->filter_value_id,
+          //       'location_id' => $location->id,
+          //       'parent_locations' => $location->parent_master,
+          //       'male' => $location->male * ($item->male / 100),
+          //       'female' => $location->female * ($item->female / 100),
+          //       'other' => $location->other * ($item->other / 100),
+          //     ]);
+          //   }
+          // }
+          // Toastr::success('success', 'Master Data Successfully synced');
+          Toastr::warning('warning', 'Working on Sync functionality');
+          return redirect()->route('utilities.masters.index');
+        } catch (Exception $e) {
+          return $e;
+        }
+      }
+    } else {
+      Toastr::error('something went wrong');
+      return redirect()->route('utilities.masters.index');
+    }
   }
 }

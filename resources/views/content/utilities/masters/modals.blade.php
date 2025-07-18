@@ -9,8 +9,8 @@
                 </div>
 
                 <input type="hidden" name="Filter_id" value="{{ $filter->id }}">
-                <input type="hidden" name="Filter_parent_id" value="{{ $filter_parent->id }}">
-                <input type="hidden" name="master_id" value="{{ $master->id }}">
+                <input type="hidden" name="Filter_parent_id" id="Filter_parent_id">
+                <input type="hidden" name="master_id" id="master_id" value="{{ $master->id }}">
                 <div class="modal-body overflow-auto" style="max-height: 400px;">
                     <div class="table-responsive">
                         <table class="table table-bordered" id="modalDetails-table">
@@ -23,31 +23,8 @@
                                     <th>Other</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                @foreach ($filter_parent->filter_values as $index => $filter_value)
-                                    @php
-                                        $id = $filter_value->id;
-                                        $gender = isset($saved_data[$id])
-                                            ? $saved_data[$id]
-                                            : ['male' => 0, 'female' => 0, 'other' => 0];
-                                    @endphp
-                                    <tr>
-                                        <td>{{ $index + 1 }}</td>
-                                        <td>{{ $filter_value->title }}</td>
-                                        <td>
-                                            <input type="number" name="filterValue[{{ $filter_value->id }}][male]"
-                                                class="form-control male-input" value="{{ $gender['male'] ?? '' }}">
-                                        </td>
-                                        <td>
-                                            <input type="number" name="filterValue[{{ $filter_value->id }}][female]"
-                                                class="form-control female-input" value="{{ $gender['female'] ?? '' }}">
-                                        </td>
-                                        <td>
-                                            <input type="number" name="filterValue[{{ $filter_value->id }}][other]"
-                                                class="form-control other-input" value="{{ $gender['other'] ?? '' }}">
-                                        </td>
-                                    </tr>
-                                @endforeach
+                            <tbody id="dynamic-filter-inputs">
+                                <!-- JS will inject rows here -->
                             </tbody>
                             <tfoot>
                                 <tr>
@@ -61,14 +38,8 @@
                         </table>
                     </div>
                 </div>
-
                 <div class="modal-footer">
-                    {{-- @if (count($saved_data) > 0)
-                        <a class="btn btn-sm btn-primary"
-                            href="{{ route('utilities.masters.addDetails', ['master_id' => $master->id, 'filter_id' => $filter->id]) }}">next</a>
-                    @else --}}
-                        <button type="submit" class="btn btn-sm btn-primary">Save</button>
-                    {{-- @endif --}}
+                    <button id="saveBtn" type="submit" class="btn btn-sm btn-primary">Save</button>
                 </div>
             </div>
         </form>
@@ -82,9 +53,9 @@
         if (modal) {
             // Function to calculate and update totals
             function calculateTotals() {
-                const maleInputs = document.querySelectorAll('.male-input');
-                const femaleInputs = document.querySelectorAll('.female-input');
-                const otherInputs = document.querySelectorAll('.other-input');
+                const maleInputs = modal.querySelectorAll('.male-input');
+                const femaleInputs = modal.querySelectorAll('.female-input');
+                const otherInputs = modal.querySelectorAll('.other-input');
 
                 let maleTotal = 0;
                 let femaleTotal = 0;
@@ -112,14 +83,14 @@
                 }
 
                 // Update total displays
-                document.getElementById('male_total_modal').textContent = maleTotal.toFixed(2);
-                document.getElementById('female_total_modal').textContent = femaleTotal.toFixed(2);
-                document.getElementById('other_total_modal').textContent = otherTotal.toFixed(2);
+                modal.querySelector('#male_total_modal').textContent = maleTotal.toFixed(2);
+                modal.querySelector('#female_total_modal').textContent = femaleTotal.toFixed(2);
+                modal.querySelector('#other_total_modal').textContent = otherTotal.toFixed(2);
             }
 
             // Function to attach input event listeners
             function attachInputListeners() {
-                const inputs = document.querySelectorAll('.male-input, .female-input, .other-input');
+                const inputs = modal.querySelectorAll('.male-input, .female-input, .other-input');
                 inputs.forEach(input => {
                     // Remove existing listeners to prevent duplicates
                     input.removeEventListener('input', calculateTotals);
@@ -128,21 +99,88 @@
             }
 
             // Bootstrap 5 modal show event
-            modal.addEventListener('show.bs.modal', function(event) {
+            modal.addEventListener('show.bs.modal', async function(event) {
                 const button = event.relatedTarget;
                 const filterTitle = button.getAttribute('data-filter-value-title') || 'Details';
+                const filterValueId = button.getAttribute('data-filter-value-id');
+                const master_id = modal.querySelector('#master_id').value;
+
+                // Scope saveBtn to this modal instance
+                const saveBtn = modal.querySelector('#saveBtn');
+                const filterParentInput = modal.querySelector('#Filter_parent_id');
+
+                // Reset save button state
+                saveBtn.disabled = false;
+
+                // Set Filter_parent_id
+                filterParentInput.value = filterValueId;
+
+                // Set modal title
                 const modalTitle = modal.querySelector('.modal-title');
                 if (modalTitle) {
-                    modalTitle.textContent = `Add Details: ${filterTitle}`;
+                    modalTitle.textContent = `Add Details: ${filterTitle} - ${filterValueId}`;
                 }
 
-                // Attach input listeners and calculate initial totals
-                attachInputListeners();
-                calculateTotals();
+                // Clear previous rows
+                const tbody = modal.querySelector('#dynamic-filter-inputs');
+                tbody.innerHTML = `<tr><td colspan="5">Loading...</td></tr>`;
+
+                try {
+                    const BASE_URL = "{{ url('/') }}";
+                    const res = await fetch(
+                        `${BASE_URL}/utilities/masters/load-filter-values/${filterValueId}/${master_id}`
+                    );
+                    const json = await res.json();
+
+                    // Disable save button if data is already saved
+                    if (json.savedData === true) {
+                        saveBtn.disabled = true;
+                    }
+
+                    // Generate table rows
+                    const rowsHtml = json.data.map((item, index) => `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${item.title}</td>
+                        <td>
+                            <input type="number" name="filterValue[${item.id}][male]"
+                                class="form-control male-input" value="${item.male}">
+                        </td>
+                        <td>
+                            <input type="number" name="filterValue[${item.id}][female]"
+                                class="form-control female-input" value="${item.female}">
+                        </td>
+                        <td>
+                            <input type="number" name="filterValue[${item.id}][other]"
+                                class="form-control other-input" value="${item.other}">
+                        </td>
+                    </tr>
+                `).join('');
+
+                    tbody.innerHTML = rowsHtml;
+
+                    // Re-attach events
+                    attachInputListeners();
+                    calculateTotals();
+                } catch (err) {
+                    tbody.innerHTML = `<tr><td colspan="5">Failed to load data</td></tr>`;
+                    console.error('Error loading filter values:', err);
+                }
             });
 
-            // Recalculate totals when modal is fully shown to ensure values are updated
+            // Recalculate totals when modal is fully shown
             modal.addEventListener('shown.bs.modal', calculateTotals);
+
+            // Reset modal state when hidden to prevent lingering values
+            modal.addEventListener('hidden.bs.modal', function() {
+                const tbody = modal.querySelector('#dynamic-filter-inputs');
+                tbody.innerHTML = ''; // Clear table body
+                modal.querySelector('#Filter_parent_id').value = ''; // Reset Filter_parent_id
+                modal.querySelector('#male_total_modal').textContent = '0.00'; // Reset totals
+                modal.querySelector('#female_total_modal').textContent = '0.00';
+                modal.querySelector('#other_total_modal').textContent = '0.00';
+                modal.querySelector('#saveBtn').disabled = false; // Reset save button
+            });
         }
     });
 </script>

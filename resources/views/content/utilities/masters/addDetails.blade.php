@@ -115,25 +115,15 @@
                                 @foreach ($filter->filter_values as $index => $filter_value)
                                     <tr>
                                         <td>{{ $index + 1 }}</td>
-                                        <td>{{ $filter_value->title }}</td>
+                                        <td>{{ $filter_value['title'] }}</td>
                                         <td>
                                             <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal"
                                                 data-bs-target="#addDetailsModal"
-                                                data-filter-value-id="{{ $filter_value->id }}"
-                                                data-filter-value-title="{{ $filter_value->title }}">
+                                                data-filter-value-id="{{ $filter_value['id'] }}"
+                                                data-filter-value-title="{{ $filter_value['title'] }}">
                                                 Add Details
                                             </button>
 
-                                            {{-- Summary placeholder with initial saved data if available --}}
-                                            <div id="summary_{{ $filter_value->id }}" class="mt-1 small text-muted">
-                                                @if (isset($saved_data[$filter_value->id]))
-                                                    Male: {{ $saved_data[$filter_value->id]['male'] }}%,
-                                                    Female: {{ $saved_data[$filter_value->id]['female'] }}%,
-                                                    Other: {{ $saved_data[$filter_value->id]['other'] }}%
-                                                @else
-                                                    Not filled
-                                                @endif
-                                            </div>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -166,11 +156,16 @@
         </div>
         <input type="hidden" id="isFix" value="{{ $filter->isFix }}">
         <div class="d-flex justify-content-center">
-            @if (count($saved_data) > 0)
-                <a class="btn btn-sm btn-primary"
-                    href="{{ route('utilities.masters.addDetails', ['master_id' => $master->id, 'filter_id' => $filter->id]) }}">next</a>
+            @if ($last_data == 1)
+                <a class="btn btn-sm btn-primary" href="{{ route('utilities.masters.Syncdata', $master->id) }}">Sync
+                    Now</a>
             @else
-                <button type="submit" class="btn btn-sm btn-primary">Save</button>
+                @if (count($saved_data) > 0)
+                    <a class="btn btn-sm btn-primary"
+                        href="{{ route('utilities.masters.addDetails', ['master_id' => $master->id, 'filter_id' => $filter->id]) }}">next</a>
+                @else
+                    <button type="submit" class="btn btn-sm btn-primary" id="submitBtn">Save</button>
+                @endif
             @endif
         </div>
     </form>
@@ -179,19 +174,16 @@
 
 @section('page-script')
     <script>
-        // $(function() {
-        //     $('#masterDetails-table').DataTable();
-        // });
-
-
-        function calculateTotals() {
+        // Function to calculate totals and validate
+        function calculateTotals(tableId) {
             let male_total = 0;
             let female_total = 0;
             let other_total = 0;
-            const isFix = parseInt(document.getElementById('isFix').value);
+            const isFixElement = document.getElementById('isFix');
+            const isFix = isFixElement ? parseInt(isFixElement.value || '0') : 0;
 
-            // Loop through rows
-            $('#masterDetails-table tbody tr').each(function() {
+            // Loop through rows in the specified table
+            $(`#${tableId} tbody tr`).each(function() {
                 const maleVal = parseFloat($(this).find('input[name$="[male]"]').val()) || 0;
                 const femaleVal = parseFloat($(this).find('input[name$="[female]"]').val()) || 0;
                 const otherVal = parseFloat($(this).find('input[name$="[other]"]').val()) || 0;
@@ -200,27 +192,48 @@
                 female_total += femaleVal;
                 other_total += otherVal;
             });
-            if (isFix != 0 && (male_total > 100 || female_total > 100 || other_total > 100)) {
-                alert('Total for each gender should not exceed 100%');
-                return;
+
+            // Update totals display
+            $(`#${tableId === 'masterDetails-table' ? 'male_total' : 'male_total_modal'}`).text(male_total.toFixed(2));
+            $(`#${tableId === 'masterDetails-table' ? 'female_total' : 'female_total_modal'}`).text(female_total.toFixed(
+                2));
+            $(`#${tableId === 'masterDetails-table' ? 'other_total' : 'other_total_modal'}`).text(other_total.toFixed(2));
+
+            // Return validation result
+            if (isFix !== 0 && (male_total != 100 || female_total != 100 || other_total != 100)) {
+                return false; // Invalid totals
             }
-
-            // Show totals
-            $('#male_total').text(male_total.toFixed(2));
-            $('#female_total').text(female_total.toFixed(2));
-            $('#other_total').text(other_total.toFixed(2));
-
+            return true; // Valid totals
         }
 
+        // Attach input event listeners for a specific table
+        function attachInputListeners(tableId) {
+            $(`#${tableId}`).on('input', 'input', function() {
+                calculateTotals(tableId);
+            });
+        }
 
         $(document).ready(function() {
-            calculateTotals(); // Initial call
+            // Initialize DataTable (uncomment if needed)
+            // $('#masterDetails-table').DataTable();
 
-            // Listen to all input changes
-            $('#masterDetails-table').on('input', 'input', function() {
-                calculateTotals();
+            // Initial totals calculation for main page
+            calculateTotals('masterDetails-table');
+
+            // Attach input listeners for main page
+            attachInputListeners('masterDetails-table');
+
+            // Form submission validation for main page
+            $('form:has(#submitBtn)').on('submit', function(e) {
+                const isValid = calculateTotals('masterDetails-table');
+                const isFixElement = document.getElementById('isFix');
+                const isFix = isFixElement ? parseInt(isFixElement.value || '0') : 0;
+
+                if (isFix !== 0 && !isValid) {
+                    e.preventDefault();
+                    alert('Total for each gender should be 100%');
+                }
             });
-
         });
     </script>
 @endsection

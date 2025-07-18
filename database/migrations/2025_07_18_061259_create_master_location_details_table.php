@@ -10,12 +10,14 @@ return new class extends Migration {
    */
   public function up(): void
   {
-    Schema::create('master_data', function (Blueprint $table) {
+    Schema::create('master_location_details', function (Blueprint $table) {
       $table->id();
       $table->unsignedBigInteger('master_id');
       $table->unsignedBigInteger('filter_id');
       $table->unsignedBigInteger('parent_value_id');
       $table->unsignedBigInteger('filter_value_id');
+      $table->unsignedBigInteger('location_id');
+      $table->string('parent_locations')->nullable();
       $table->unsignedBigInteger('male')->default(0);
       $table->unsignedBigInteger('female')->default(0);
       $table->unsignedBigInteger('other')->default(0);
@@ -29,6 +31,6 @@ return new class extends Migration {
    */
   public function down(): void
   {
-    Schema::dropIfExists('master_data');
+    Schema::dropIfExists('master_location_details');
   }
 };
