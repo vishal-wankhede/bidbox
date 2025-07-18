@@ -131,7 +131,7 @@
                                 @foreach ($filter->filterValues as $index => $filter_value)
                                     <tr>
                                         <td>{{ $index + 1 }}</td>
-                                        <td>{{ $filter_value['title'] }}</td>
+                                        <td>{{ $filter_value['breadcrumb'] }}-><span class="fw-bold text-danger">{{ $filter_value['title'] }}</span></td>
                                         <td>
                                             <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal"
                                                 data-bs-target="#addDetailsModal"

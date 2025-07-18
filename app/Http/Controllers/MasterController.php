@@ -83,6 +83,17 @@ class MasterController extends Controller
         $values = FilterValue::where('filter_id', $childFilter->id)->get();
         $childValues = array_merge($childValues, $values->toArray());
       }
+      foreach ($childValues as &$childValue) {
+        $parent = Filter::find($childValue['filter_id']);
+        $breadcrumb = $parent->title;
+        while ($parent && $parent->parent_id != null) {
+          $parent = Filter::find($parent->parent_id);
+          $breadcrumb = $parent->title . ' -> ' . $breadcrumb;
+        }
+        $childValue['breadcrumb'] = $breadcrumb;
+      }
+      unset($childValue);
+      // return $childValues;
       $filter->filterValues = collect($childValues); // Convert to collection for consistency
     }
     if (!$filter) {
