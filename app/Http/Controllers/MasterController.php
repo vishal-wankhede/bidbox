@@ -250,24 +250,33 @@ class MasterController extends Controller
         $locations = Location::all();
         $master_data = MasterData::where('master_id', $master_id)->get();
         try {
-          // foreach ($locations as $location) {
-          //   foreach ($master_data as $item) {
-          //     return $location->male;
-          //     MasterLocationDetail::create([
-          //       'master_id' => $master_id,
-          //       'filter_id' => $item->filter_id,
-          //       'parent_value_id' => $item->parent_value_id,
-          //       'filter_value_id' => $item->filter_value_id,
-          //       'location_id' => $location->id,
-          //       'parent_locations' => $location->parent_master,
-          //       'male' => $location->male * ($item->male / 100),
-          //       'female' => $location->female * ($item->female / 100),
-          //       'other' => $location->other * ($item->other / 100),
-          //     ]);
-          //   }
-          // }
-          // Toastr::success('success', 'Master Data Successfully synced');
-          Toastr::warning('warning', 'Working on Sync functionality');
+          foreach ($locations as $location) {
+            foreach ($master_data as $item) {
+              $male = $location->male;
+              $female = $location->female;
+              $other = $location->other;
+              if ($male == 0 && $female == 0 && $other == 0) {
+                $locationchilds = Location::whereRaw('FIND_IN_SET(?, parent_master)', [$location->id])->get();
+                foreach ($locationchilds as $locationchild) {
+                  $male += $locationchild->male;
+                  $female += $locationchild->female;
+                  $other += $locationchild->other;
+                }
+              }
+              MasterLocationDetail::create([
+                'master_id' => $master_id,
+                'filter_id' => $item->filter_id,
+                'parent_value_id' => $item->parent_value_id,
+                'filter_value_id' => $item->filter_value_id,
+                'location_id' => $location->id,
+                'parent_locations' => $location->parent_master,
+                'male' => $male * ($item->male / 100),
+                'female' => $female * ($item->female / 100),
+                'other' => $other * ($item->other / 100),
+              ]);
+            }
+          }
+          Toastr::success('success', 'Master Data Successfully synced');
           return redirect()->route('utilities.masters.index');
         } catch (Exception $e) {
           return $e;
