@@ -11,6 +11,8 @@ use App\Models\FilterValue;
 use App\Models\Gender;
 use App\Models\Location;
 use App\Models\LocationDetail;
+use App\Models\Master;
+use App\Models\MasterLocationDetail;
 use App\Models\Permission;
 use Faker\Core\File;
 use Faker\Provider\ar_EG\Person;
@@ -47,6 +49,8 @@ class CampaignController extends Controller
     $data['divisions'] = Filter::where('parent_id', null)
       ->where('child', 1)
       ->get();
+    $data['masters'] = Master::all();
+
     return view('content.pages.addcampaign', $data);
   }
 
@@ -83,6 +87,8 @@ class CampaignController extends Controller
     // ✅ Create campaign
     $campaign = Campaign::create([
       'campaign_name' => $request->campaign_name,
+      'master_id' => $request->master,
+      'client_view_name' => $request->client_view_name,
       'campaign_description' => $request->campaign_description,
       'brand_name' => $request->brand_name,
       'brand_logo' => $logoPath,
@@ -159,84 +165,66 @@ class CampaignController extends Controller
 
   public function getTargetAudience(Request $request)
   {
-    // return $request->all();
-    $LocationDetails = LocationDetail::query();
+    $filter_values = [];
 
-    if (!empty($request->locations)) {
-      // 1. Location Filter
-      $requested = $request->locations ?? []; // array of selected location IDs
-      $final = [];
-
-      foreach ($requested as $locId) {
-        $hasChildInRequest = Location::where('parent', $locId)
-          ->whereIn('id', $requested)
-          ->exists();
-
-        if (!$hasChildInRequest) {
-          $final[] = (int) $locId;
-        }
+    // Merge regular filter values
+    if ($request->has('filters')) {
+      foreach ($request->filters as $filterId => $filterValues) {
+        $filter_values = array_merge($filter_values, $filterValues);
       }
-
-      $arr_final = array_values(array_unique($final)); // final array without parent if child exists
-
-      $LocationDetails->where(function ($query) use ($arr_final) {
-        foreach ($arr_final as $val) {
-          $query->orWhereRaw('FIND_IN_SET(?, parent_locations)', [$val]);
-        }
-      });
     }
-    // 2. Gender Filter
-    if (!empty($request->gender)) {
-      $LocationDetails->where(function ($query) use ($request) {
-        foreach ($request->gender as $val) {
-          $query->orWhereRaw('FIND_IN_SET(?, gender_id)', [$val]);
-        }
-      });
+    // Merge division filter values
+    if ($request->has('divisions')) {
+      foreach ($request->divisions as $divisionId => $divisionValues) {
+        $filter_values = array_merge($filter_values, $divisionValues);
+      }
     }
+    // return $filter_values;
+    $temp = [];
 
-    if (!empty($request->filters)) {
-      $inputFilters = collect($request->filters);
+    $masterFilters = Filter::whereNull('parent_id')->get();
 
-      // Step 1: Extract and prepare filter_id → values mapping
-      $filterValueMap = $inputFilters->mapWithKeys(function ($item) {
-        return [(int) $item['filter_id'] => array_map('intval', $item['values'] ?? [])];
-      });
+    foreach ($masterFilters as $masterFilter) {
+      // Get child filter IDs using FIND_IN_SET
+      $childFilterIds = Filter::whereRaw('FIND_IN_SET(?, parent_master)', [$masterFilter->id])
+        ->pluck('id')
+        ->toArray();
 
-      $filterIds = $filterValueMap->keys();
+      // Include the master filter's own ID
+      $allFilterIds = array_merge($childFilterIds, [$masterFilter->id]);
 
-      // Step 2: Fetch filter metadata sorted by filter_order
-      $filtersMeta = Filter::whereIn('id', $filterIds)
-        ->orderBy('filter_order')
-        ->get(['id', 'filter_order']);
+      // Get filter value IDs belonging to this group
+      $groupFilterValueIds = FilterValue::whereIn('filter_id', $allFilterIds)
+        ->pluck('id')
+        ->toArray();
 
-      // Step 3: Rebuild the array in order (filter_id → values)
-      $orderedFilters = $filtersMeta
-        ->map(function ($filter) use ($filterValueMap) {
-          return [
-            'filter_id' => $filter->id,
-            'values' => $filterValueMap[$filter->id] ?? [],
-          ];
-        })
-        ->values();
+      // Get the intersection with the input $filter_values
+      $matchedArray = array_values(array_intersect($filter_values, $groupFilterValueIds));
 
-      // Step 4: Merge all values in correct order
-      $allValues = $orderedFilters
-        ->pluck('values') // get collection of arrays
-        ->flatten() // flatten to single array
-        ->values(); // reindex
-
-      // Step 5: Split into all-but-last and last
-      $last_val = $allValues->pop(); // removes and returns last element
-      $values = $allValues->toArray(); // remaining values
-
-      $LocationDetails->where('filter_value_id', $last_val)->where(function ($query) use ($values) {
-        foreach ($values as $val) {
-          $query->orWhereRaw('FIND_IN_SET(?, parent_detail_id)', [$val]);
-        }
-      });
+      // Optional: only store if match exists
+      // if (!empty($matchedArray)) {
+      $temp[$masterFilter->id] = $matchedArray;
+      // }
     }
 
-    $population = $LocationDetails->sum('population_value');
+    // Proceed with master data
+    $MasterData = MasterLocationDetail::whereIn('location_id', $request->locations)->where(
+      'master_id',
+      $request->master
+    );
+
+    $MasterData->get();
+
+    $population = 0;
+    if (in_array(1, $request->gender)) {
+      $population += $MasterData->sum('male');
+    }
+    if (in_array(2, $request->gender)) {
+      $population += $MasterData->sum('female');
+    }
+    if (in_array(3, $request->gender)) {
+      $population += $MasterData->sum('other');
+    }
 
     return response()->json([
       'population' => $population,

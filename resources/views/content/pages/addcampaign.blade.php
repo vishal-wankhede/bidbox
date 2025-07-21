@@ -39,7 +39,6 @@
             display: flex;
             justify-content: space-between;
             flex-direction: column;
-
         }
 
         .bs-stepper .bs-stepper-header {
@@ -76,12 +75,6 @@
             line-height: normal;
         }
 
-        /* #dynamic-filters-vertical-modern {
-                display: flex;
-                flex-direction: column;
-                min-height: 100%;
-            } */
-
         #dynamic-filters-vertical-modern .row.g-3 {
             flex: 1;
             display: flex;
@@ -94,12 +87,6 @@
             justify-content: space-between;
             margin-top: 8rem;
         }
-
-        /* #account-details-vertical-modern {
-                display: flex;
-                flex-direction: column;
-                min-height: 100%;
-            }*/
 
         .account-details-footer {
             display: flex;
@@ -190,7 +177,7 @@
                     </div>
                     <div class="card mt-5 p-2 text-center">
                         <h4>Target Audience</h4>
-                        <h5 id="target_audience"></h5>
+                        <h5 id="target_audience">Please select geo and gender to get target audience estimate</h5>
                     </div>
                 </div>
                 <div class="bs-stepper-content">
@@ -262,7 +249,6 @@
                                         </label>
                                     </div>
                                 </div>
-
                             </div>
                             <div class="account-details-footer">
                                 <button class="btn btn-outline-secondary btn-prev" type="button" disabled>
@@ -285,10 +271,10 @@
                                     <div class="d-flex justify-content-between">
                                         <label class="form-label">Projections</label>
                                     </div>
-                                    <div class=" row rounded p-2">
+                                    <div class="row rounded p-2">
                                         <div class="col-md-3 g-2 align-items-center mb-2">
                                             <label class="form-label">Client View Name</label>
-                                            <input type="number" name="client_view_name" class="form-control"
+                                            <input type="text" name="client_view_name" class="form-control"
                                                 placeholder="Client View Name" required>
                                         </div>
                                         <div class="col-md-3 g-2 align-items-center mb-2">
@@ -342,6 +328,16 @@
                                 <h6 class="mb-1">Demographic Details</h6>
                                 <small>Enter demographic details of the campaign</small>
                             </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <label for="master" class="form-label">Select Master</label>
+                                    <select name="master" id="master" class="form-select">
+                                        @foreach ($masters as $master)
+                                            <option value="{{ $master->id }}">{{ $master->master_name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
                             <div class="row g-3">
                                 <div class="col-12">
                                     <div id="location-container">
@@ -355,7 +351,8 @@
                                         <div id="location-percentages" class="percentage-container"></div>
                                     </div>
                                     <label class="form-label d-block">Gender</label>
-                                    <select class="form-select select2" name="gender[]" id="gender" multiple>
+                                    <select class="form-select select2" name="gender[]" id="gender"
+                                        onchange="loadTargetAudience()" multiple>
                                         <option value="1">male</option>
                                         <option value="2">female</option>
                                         <option value="3">other</option>
@@ -369,18 +366,14 @@
                                                     class="btn btn-outline-secondary btn-sm filterbtn">
                                                     {{ $filter->title }}
                                                 </button>
-
-                                                <select class="form-select filtervalue"
+                                                <select onchange="loadTargetAudience()" class="form-select filtervalue"
                                                     name="filtervalues[{{ $filter->id }}][]"
                                                     id="filtervalue[{{ $filter->id }}]" multiple>
                                                     <option value="">--</option>
                                                 </select>
                                             </div>
-
                                             <div id="filter-percentages-{{ $filter->id }}"
-                                                class="percentage-container w-100 mt-1">
-                                                <!-- Percentage indicators go here -->
-                                            </div>
+                                                class="percentage-container w-100 mt-1"></div>
                                         </div>
                                     @endforeach
                                 </div>
@@ -416,8 +409,6 @@
                                         </div>
                                     @endforeach
                                 </div>
-
-                                <!-- Footer Buttons -->
                                 <div class="dynamic-filters-footer">
                                     <button class="btn btn-outline-secondary btn-prev" type="button">
                                         <i class="mdi mdi-arrow-left me-sm-1"></i>
@@ -510,7 +501,6 @@
 
             updateLocationPercentages(level);
             if (selectedValues.length === 0) {
-                handleDemographicChange();
                 return;
             }
 
@@ -545,7 +535,6 @@
 
                         const label = document.createElement('label');
                         label.className = 'form-label mt-3 d-block';
-
                         label.textContent = data.child_name;
 
                         container.appendChild(label);
@@ -555,7 +544,6 @@
                             $(newSelect).on('change', () => updateLocationPercentages(levelCounter));
                         }
                     }
-                    handleDemographicChange();
                 })
                 .catch(error => console.error('Fetch error:', error));
         }
@@ -590,7 +578,6 @@
             $('.filtervalue').hide();
             $('#gender').on('change', function() {
                 updateGenderPercentages();
-                handleDemographicChange();
             });
 
             $('.filterbtn').on('click', function() {
@@ -611,7 +598,6 @@
                             targetSelect.appendChild(option);
                         });
                         updateFilterPercentages(filterId);
-                        handleDemographicChange();
                     })
                     .catch(error => console.error('Error fetching:', error));
             });
@@ -619,7 +605,6 @@
             $('.filtervalue').on('change', function() {
                 const filterId = this.id.match(/\d+/g)?.[0];
                 updateFilterPercentages(filterId);
-                handleDemographicChange();
             });
 
             function updateGenderPercentages() {
@@ -672,8 +657,130 @@
                 }
             }
 
-
+            // Initialize target audience on page load
+            loadTargetAudience();
         });
+    </script>
+
+    <script>
+        function getAllSelectedLocations() {
+            const locationSelects = document.querySelectorAll('select[name="locations[]"]');
+            const selectedLocations = [];
+
+            locationSelects.forEach((select, index) => {
+                const level = select.id.split('-')[1]; // Extract level number (e.g., 0, 1, etc.)
+                const selectedOptions = Array.from(select.selectedOptions).map(opt => ({
+                    level: parseInt(level),
+                    id: opt.value,
+                    name: opt.textContent
+                }));
+                selectedLocations.push(...selectedOptions);
+            });
+
+            return selectedLocations;
+        }
+
+        function getSelectedGenders() {
+            const genderSelect = document.getElementById('gender');
+            const selectedGenders = Array.from(genderSelect.selectedOptions).map(opt => ({
+                id: opt.value,
+                name: opt.textContent
+            }));
+            return selectedGenders;
+        }
+
+        // Function to get selected master
+        function getSelectedMaster() {
+            const masterSelect = document.getElementById('master');
+            const selectedMaster = {
+                id: masterSelect.value,
+                name: masterSelect.selectedOptions[0]?.textContent || ''
+            };
+            return selectedMaster;
+        }
+
+        function getSelectedFilters() {
+            const selectedFilters = [];
+
+            // Get selected regular filter values (from filtervalue selects)
+            const filterSelects = document.querySelectorAll('select[name^="filtervalues["]');
+            filterSelects.forEach(select => {
+                const filterId = select.id.match(/\d+/g)?.[0]; // Extract filter ID from id="filtervalue[filterId]"
+                const selectedOptions = Array.from(select.selectedOptions).map(opt => ({
+                    type: 'filter',
+                    filterId: filterId,
+                    id: opt.value,
+                    name: opt.textContent
+                }));
+                selectedFilters.push(...selectedOptions);
+            });
+
+            // Get selected division filter values (from division checkboxes)
+            const divisionContainers = document.querySelectorAll('div[id^="division-multiselect-tree-"]');
+            divisionContainers.forEach(container => {
+                const divisionId = container.id.match(/\d+/g)?.[0]; // Extract division ID
+                const selectedCheckboxes = container.querySelectorAll(
+                    `input[name="division_value[${divisionId}][]"]:checked`);
+                const selectedDivisionOptions = Array.from(selectedCheckboxes).map(checkbox => ({
+                    type: 'division',
+                    filterId: divisionId,
+                    id: checkbox.value,
+                    name: checkbox.parentElement.textContent.trim()
+                }));
+                selectedFilters.push(...selectedDivisionOptions);
+            });
+
+            return selectedFilters;
+        }
+
+        function loadTargetAudience() {
+            const selectedLocations = getAllSelectedLocations();
+            const selectedGenders = getSelectedGenders();
+            const selectedMaster = getSelectedMaster();
+            const selectedFilters = getSelectedFilters();
+            const targetAudience = document.getElementById('target_audience');
+            const BASE_URL = "{{ url('/') }}";
+
+            // If no locations or genders are selected, show default message
+            if (selectedLocations.length === 0 || selectedGenders.length === 0) {
+                targetAudience.textContent = "Please select geo and gender to get target audience estimate";
+                return;
+            }
+
+            // Construct query parameters
+            const queryParams = new URLSearchParams();
+            selectedLocations.forEach(loc => queryParams.append('locations[]', loc.id));
+            selectedGenders.forEach(gender => queryParams.append('gender[]', gender.id));
+            if (selectedMaster.id) {
+                queryParams.append('master', selectedMaster.id);
+            }
+            // Add regular filters as filters[filterId][]
+            selectedFilters
+                .filter(f => f.type === 'filter')
+                .forEach(filter => queryParams.append(`filters[${filter.filterId}][]`, filter.id));
+            // Add division filters as divisions[divisionId][]
+            selectedFilters
+                .filter(f => f.type === 'division')
+                .forEach(division => queryParams.append(`divisions[${division.filterId}][]`, division.id));
+
+            console.log(`${BASE_URL}/campaign/getTargetAudience?${queryParams.toString()}`);
+
+            fetch(`${BASE_URL}/campaign/getTargetAudience?${queryParams.toString()}`, {
+                    method: 'GET',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    targetAudience.textContent = data.population || "No target audience data available";
+                    console.log(data);
+                })
+                .catch(error => {
+                    console.error('Error fetching:', error);
+                    targetAudience.textContent = "Error fetching target audience";
+                });
+        }
     </script>
 
     <style>
@@ -706,89 +813,6 @@
     </style>
 
     <script>
-        function handleDemographicChange() {
-            const locations = $('select[name="locations[]"]').map(function() {
-                return $(this).val();
-            }).get().flat().filter(Boolean).map(Number);
-            const gender = $('#gender').val() || [];
-            const genderValues = gender.map(Number);
-            const filtersMap = {};
-            $('select[name^="filtervalues["]').each(function() {
-                const filterId = $(this).attr('id').match(/\d+/g)?.[0];
-                const values = $(this).val() || [];
-                if (filterId && values.length > 0) {
-                    filtersMap[filterId] = values.map(Number);
-                }
-            });
-            $('input[type="checkbox"][name^="division_value["]:checked').each(function() {
-                const nameAttr = $(this).attr('name');
-                const filterIdMatch = nameAttr.match(/division_value\[(\d+)\]/);
-                if (filterIdMatch) {
-                    const filterId = filterIdMatch[1];
-                    const value = parseInt($(this).val());
-                    if (!filtersMap[filterId]) filtersMap[filterId] = [];
-                    filtersMap[filterId].push(value);
-                }
-            });
-
-            const locationPercentages = {};
-            document.querySelectorAll('input[name^="location_percentages["]').forEach(input => {
-                const id = input.name.match(/location_percentages\[(\d+)\]/)[1];
-                locationPercentages[id] = parseFloat(input.value) || 0;
-            });
-
-            const genderPercentages = {};
-            document.querySelectorAll('input[name^="gender_percentages["]').forEach(input => {
-                const id = input.name.match(/gender_percentages\[(\d+)\]/)[1];
-                genderPercentages[id] = parseFloat(input.value) || 0;
-            });
-
-            const filterPercentages = {};
-            document.querySelectorAll('input[name^="filter_percentages["]').forEach(input => {
-                const matches = input.name.match(/filter_percentages\[(\d+)\]\[(\d+)\]/);
-                if (matches) {
-                    const filterId = matches[1];
-                    const valueId = matches[2];
-                    if (!filterPercentages[filterId]) filterPercentages[filterId] = {};
-                    filterPercentages[filterId][valueId] = parseFloat(input.value) || 0;
-                }
-            });
-
-            const divisionPercentages = {};
-            document.querySelectorAll('input[name^="division_percentages["]').forEach(input => {
-                const matches = input.name.match(/division_percentages\[(\d+)\]\[(\d+)\]/);
-                if (matches) {
-                    const divisionId = matches[1];
-                    const valueId = matches[2];
-                    if (!divisionPercentages[divisionId]) divisionPercentages[divisionId] = {};
-                    divisionPercentages[divisionId][valueId] = parseFloat(input.value) || 0;
-                }
-            });
-
-            const queryParams = new URLSearchParams();
-            locations.forEach(loc => queryParams.append('locations[]', loc));
-            genderValues.forEach(g => queryParams.append('gender[]', g));
-            let filterIndex = 0;
-            for (const [filterId, values] of Object.entries(filtersMap)) {
-                queryParams.append(`filters[${filterIndex}][filter_id]`, filterId);
-                values.forEach(val => queryParams.append(`filters[${filterIndex}][values][]`, val));
-                filterIndex++;
-            }
-
-            const BASE_URL = "{{ url('/') }}";
-            fetch(`${BASE_URL}/campaign/getTargetAudience?${queryParams.toString()}`, {
-                    method: 'GET',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    }
-                })
-                .then(res => res.json())
-                .then(data => {
-                    document.getElementById('target_audience').innerHTML = data.population;
-                })
-                .catch(err => console.error('Fetch error:', err));
-        }
-
         document.addEventListener('DOMContentLoaded', function() {
             const buttons = document.querySelectorAll('.show-division');
             buttons.forEach(button => {
@@ -852,7 +876,7 @@
                                 checkbox.value = entry.id;
                                 checkbox.addEventListener('change', function() {
                                     updateDivisionPercentages(divisionId);
-                                    handleDemographicChange();
+                                    loadTargetAudience();
                                 });
                                 label.appendChild(checkbox);
                                 label.append(' ' + entry.title);
@@ -915,7 +939,6 @@
                     divisionContainer.appendChild(percentageContainer);
                 }
             }
-
         });
     </script>
 

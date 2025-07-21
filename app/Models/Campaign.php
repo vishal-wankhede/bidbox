@@ -7,6 +7,8 @@ class Campaign extends Model
 {
   protected $fillable = [
     'campaign_name',
+    'master_id',
+    'client_view_name',
     'campaign_description',
     'brand_name',
     'brand_logo',
