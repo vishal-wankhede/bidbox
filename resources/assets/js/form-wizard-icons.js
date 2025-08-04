@@ -62,7 +62,6 @@ $(function () {
     // Submit button
     if (btnSubmit) {
       btnSubmit.addEventListener('click', event => {
-        
         event.preventDefault(); // Allow validation before submission
         const form = btnSubmit.closest('form');
         // Optional: Add validation logic here

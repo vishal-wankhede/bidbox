@@ -2,17 +2,17 @@
 <div class="modal fade" id="setProjectionTimeModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-simple modal-dialog-centered modal-set-projection-time">
         <div class="modal-content">
-            <div class="modal-body p-0">
+            <div class="modal-header sticky-top bg-white p-4 border-bottom">
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                <div class="text-center mb-4">
+                <div class="w-100 text-center">
                     <h4 class="mb-2 pb-0">Set Projection Time</h4>
-                    <p>Fill in Projection details daily basis</p>
+                    <p class="mb-2">Fill in Projection details daily basis</p>
+                    <strong>Total: <span id="dateTotal" style="color:red;">0</span>%</strong>
                 </div>
-                <div class="container px-4 pb-4">
-                    <div id="projectionDatesContainer" class="row g-3"></div>
-                    <div class="text-end mt-3">
-                        <strong>Total: <span id="dateTotal" style="color:red;">0</span>%</strong>
-                    </div>
+            </div>
+            <div class="modal-body p-4" style="max-height: 60vh; overflow-y: auto;">
+                <div id="projectionDatesContainer" class="row g-3"></div>
+                <div class="container px-0 pb-4">
                     <div class="text-end mt-2">
                         <button type="button" class="btn btn-primary" id="savedateBtn">Save</button>
                     </div>
@@ -20,9 +20,10 @@
 
                 <!-- Second Modal for Hour-wise -->
                 <div class="modal fade" id="setHourModal" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog modal-lg modal-dialog-centered modal-simple modal-set-hour-projection">
+                    <div class="modal-dialog modal-lg modal-simple"
+                        style="position: fixed; top: 15%; left: 9%; transform: translateX(-5%);">
                         <div class="modal-content">
-                            <div class="modal-body p-4">
+                            <div class="modal-body p-2">
                                 <button type="button" class="btn-close float-end" data-bs-dismiss="modal"
                                     aria-label="Close"></button>
                                 <h5 class="mb-3">Set 24-Hour Distribution for <span id="hourModalDate"></span></h5>
@@ -169,22 +170,17 @@
                     const sourceDate = this.dataset.date;
                     const sourceValue = parseInt(projectionData[sourceDate].percentage) || 0;
 
-                    const totalDates = Object.keys(projectionData).length;
-                    const newTotal = sourceValue * totalDates;
-
-                    // if (newTotal !== 100) {
-                    //     alert(
-                    //         `Cannot apply ${sourceValue}% to all ${totalDates} days. Total would be ${newTotal}%. Make sure total is 100%.`
-                    //     );
-                    //     return;
-                    // }
-
                     Object.keys(projectionData).forEach(dateKey => {
                         projectionData[dateKey].percentage = sourceValue;
                     });
 
                     renderDateRows();
-                    alert(`Applied ${sourceValue}% to all days.`);
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: `Applied ${sourceValue}% to all days.`,
+                        confirmButtonText: 'OK'
+                    });
                 });
             });
         }
@@ -197,7 +193,7 @@
 
             data.forEach((val, hour) => {
                 hourInputs.innerHTML += `
-                    <div class="col-md-2 d-flex align-items-center">
+                    <div class="col-md-3 d-flex align-items-center">
                         <label class="me-1 mb-0">${hour}:00</label>
                         <input type="number" class="form-control hour-input" data-hour="${hour}" value="${val}" min="0" step="1" />
                     </div>`;
@@ -225,7 +221,11 @@
                 });
 
                 if (total !== 100) {
-                    alert("24-hour total must be exactly 100% to save.");
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'error',
+                        text: `24-hour distribution must total 100% to save.`,
+                    });
                     return;
                 }
 
@@ -264,7 +264,11 @@
             });
 
             if (total !== 100) {
-                alert("24-hour distribution must total 100% before applying to all days.");
+                Swal.fire({
+                    icon: 'error',
+                    title: 'error',
+                    text: `24-hour distribution must total 100% before applying to all days.`,
+                });
                 return;
             }
 
@@ -273,21 +277,33 @@
                 projectionData[date].hourlyTotal = total;
                 projectionData[date].saved = true;
             });
-
-            alert("Applied current 24-hour distribution to all days.");
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: `Applied current 24-hour distribution to all days.`,
+                confirmButtonText: 'OK'
+            });
             renderDateRows();
         };
 
-        saveDateBtn.addEventListener('click', function() {
+        saveDateBtn.addEventListener('click', function(e) {
             const total = parseInt(dateTotalSpan.textContent) || 0;
             if (total !== 100) {
                 e.preventDefault();
-                alert("Date percentages must total exactly 100% to save.");
+                Swal.fire({
+                    icon: 'error',
+                    title: 'error',
+                    text: `Date percentages must total exactly 100% to save.`,
+                });
                 return;
             }
 
             console.log("Final projectionData", projectionData);
-            alert("Data saved successfully!");
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: `data saved successfully.`,
+            });
         });
 
         mainModal.addEventListener('show.bs.modal', renderDateRows);

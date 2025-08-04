@@ -57,18 +57,32 @@ class CampaignController extends Controller
   public function store(Request $request)
   {
     // return $request->all();
-    $validated = $request->validate([
+    $validator = Validator::make($request->all(), [
       'campaign_name' => 'required|string|max:255',
       'brand_name' => 'required|string|max:255',
       'channel' => 'required|string',
       'impressions' => 'required|integer|min:1',
-      'ctr' => 'nullable|numeric',
-      'vtr' => 'nullable|numeric',
+      'ctr' => 'required|numeric|max:100|min:0',
+      'budget_type' => 'required|string',
+      'total_budget' => 'required|numeric|min:0',
+      'vtr' => 'nullable|numeric|max:100|min:0',
       'start_date' => 'required|date',
       'end_date' => 'required|date|after_or_equal:start_date',
+      'location_percentages' => 'required',
+      'gender_percentages' => 'required',
       'brand_logo' => 'nullable|file|mimes:jpg,jpeg,png,svg|max:2048',
-      'creative_files.*' => 'nullable|file|mimes:jpg,jpeg,png,gif,mp4|max:10000',
     ]);
+
+    if ($validator->fails()) {
+      $errors = $validator->errors();
+      return $errors;
+      foreach ($errors as $error) {
+        Toastr::error($error, 'error');
+      }
+      return redirect()
+        ->back()
+        ->withInput();
+    }
 
     // ✅ Upload brand logo
     $logoPath = null;
@@ -106,8 +120,8 @@ class CampaignController extends Controller
     ]);
 
     // ✅ Upload and store creative files
-    if ($request->hasFile('creative_files')) {
-      foreach ($request->file('creative_files') as $i => $file) {
+    if ($request->hasFile('creatives')) {
+      foreach ($request->file('creatives') as $i => $file) {
         $filename =
           time() .
           '-' .

@@ -1,7 +1,6 @@
 /**
- *  Form Wizard
+ * Form Wizard jjkkk
  */
-
 'use strict';
 
 $(function () {
@@ -14,7 +13,7 @@ $(function () {
     handleBootstrapSelectEvents();
   }
 
-  // select2
+  // Select2
   if (select2.length) {
     select2.each(function () {
       var $this = $(this);
@@ -29,138 +28,53 @@ $(function () {
 });
 
 (function () {
-  // Icons Wizard
-  // --------------------------------------------------------------------
-  const wizardIcons = document.querySelector('.wizard-icons-example');
+  // Function to initialize a wizard
+  function initializeWizard(wizardSelector, stepperOptions = { linear: false }) {
+    const wizard = document.querySelector(wizardSelector);
+    console.log('form-wizard-icons', wizard);
+    if (!wizard) return;
 
-  if (typeof wizardIcons !== undefined && wizardIcons !== null) {
-    const wizardIconsBtnNextList = [].slice.call(wizardIcons.querySelectorAll('.btn-next')),
-      wizardIconsBtnPrevList = [].slice.call(wizardIcons.querySelectorAll('.btn-prev')),
-      wizardIconsBtnSubmit = wizardIcons.querySelector('.btn-submit');
+    const btnNextList = [].slice.call(wizard.querySelectorAll('.btn-next')),
+      btnPrevList = [].slice.call(wizard.querySelectorAll('.btn-prev')),
+      btnSubmit = wizard.querySelector('.btn-submit');
 
-    const iconsStepper = new Stepper(wizardIcons, {
-      linear: false
-    });
-    if (wizardIconsBtnNextList) {
-      wizardIconsBtnNextList.forEach(wizardIconsBtnNext => {
-        wizardIconsBtnNext.addEventListener('click', event => {
-          iconsStepper.next();
+    const stepper = new Stepper(wizard, stepperOptions);
+
+    // Next button
+    if (btnNextList) {
+      btnNextList.forEach(btnNext => {
+        btnNext.addEventListener('click', event => {
+          console.log(btnNext);
+          event.preventDefault(); // Prevent form submission
+          stepper.next();
         });
       });
     }
-    if (wizardIconsBtnPrevList) {
-      wizardIconsBtnPrevList.forEach(wizardIconsBtnPrev => {
-        wizardIconsBtnPrev.addEventListener('click', event => {
-          iconsStepper.previous();
+
+    // Previous button
+    if (btnPrevList) {
+      btnPrevList.forEach(btnPrev => {
+        btnPrev.addEventListener('click', event => {
+          event.preventDefault(); // Prevent form submission
+          stepper.previous();
         });
       });
     }
-    if (wizardIconsBtnSubmit) {
-      wizardIconsBtnSubmit.addEventListener('click', event => {
-        alert('Submitted..!!');
+
+    // Submit button
+    if (btnSubmit) {
+      btnSubmit.addEventListener('click', event => {
+        event.preventDefault(); // Allow validation before submission
+        const form = btnSubmit.closest('form');
+        // Optional: Add validation logic here
+        form.submit(); // Trigger form submission
       });
     }
   }
 
-  // Vertical Icons Wizard
-  // --------------------------------------------------------------------
-  const wizardIconsVertical = document.querySelector('.wizard-vertical-icons-example');
-
-  if (typeof wizardIconsVertical !== undefined && wizardIconsVertical !== null) {
-    const wizardIconsVerticalBtnNextList = [].slice.call(wizardIconsVertical.querySelectorAll('.btn-next')),
-      wizardIconsVerticalBtnPrevList = [].slice.call(wizardIconsVertical.querySelectorAll('.btn-prev')),
-      wizardIconsVerticalBtnSubmit = wizardIconsVertical.querySelector('.btn-submit');
-
-    const verticalIconsStepper = new Stepper(wizardIconsVertical, {
-      linear: false
-    });
-
-    if (wizardIconsVerticalBtnNextList) {
-      wizardIconsVerticalBtnNextList.forEach(wizardIconsVerticalBtnNext => {
-        wizardIconsVerticalBtnNext.addEventListener('click', event => {
-          verticalIconsStepper.next();
-        });
-      });
-    }
-    if (wizardIconsVerticalBtnPrevList) {
-      wizardIconsVerticalBtnPrevList.forEach(wizardIconsVerticalBtnPrev => {
-        wizardIconsVerticalBtnPrev.addEventListener('click', event => {
-          verticalIconsStepper.previous();
-        });
-      });
-    }
-    if (wizardIconsVerticalBtnSubmit) {
-      wizardIconsVerticalBtnSubmit.addEventListener('click', event => {
-        alert('Submitted..!!');
-      });
-    }
-  }
-
-  // Icons Modern Wizard
-  // --------------------------------------------------------------------
-  const wizardIconsModern = document.querySelector('.wizard-modern-icons-example');
-
-  if (typeof wizardIconsModern !== undefined && wizardIconsModern !== null) {
-    const wizardIconsModernBtnNextList = [].slice.call(wizardIconsModern.querySelectorAll('.btn-next')),
-      wizardIconsModernBtnPrevList = [].slice.call(wizardIconsModern.querySelectorAll('.btn-prev')),
-      wizardIconsModernBtnSubmit = wizardIconsModern.querySelector('.btn-submit');
-
-    const modernIconsStepper = new Stepper(wizardIconsModern, {
-      linear: false
-    });
-
-    if (wizardIconsModernBtnNextList) {
-      wizardIconsModernBtnNextList.forEach(wizardIconsModernBtnNext => {
-        wizardIconsModernBtnNext.addEventListener('click', event => {
-          modernIconsStepper.next();
-        });
-      });
-    }
-    if (wizardIconsModernBtnPrevList) {
-      wizardIconsModernBtnPrevList.forEach(wizardIconsModernBtnPrev => {
-        wizardIconsModernBtnPrev.addEventListener('click', event => {
-          modernIconsStepper.previous();
-        });
-      });
-    }
-    if (wizardIconsModernBtnSubmit) {
-      wizardIconsModernBtnSubmit.addEventListener('click', event => {
-        alert('Submitted..!!');
-      });
-    }
-  }
-
-  // Icons Modern Wizard
-  // --------------------------------------------------------------------
-  const wizardIconsModernVertical = document.querySelector('.wizard-modern-vertical-icons-example');
-
-  if (typeof wizardIconsModernVertical !== undefined && wizardIconsModernVertical !== null) {
-    const wizardIconsModernVerticalBtnNextList = [].slice.call(wizardIconsModernVertical.querySelectorAll('.btn-next')),
-      wizardIconsModernVerticalBtnPrevList = [].slice.call(wizardIconsModernVertical.querySelectorAll('.btn-prev')),
-      wizardIconsModernVerticalBtnSubmit = wizardIconsModernVertical.querySelector('.btn-submit');
-
-    const verticalModernIconsStepper = new Stepper(wizardIconsModernVertical, {
-      linear: false
-    });
-
-    if (wizardIconsModernVerticalBtnNextList) {
-      wizardIconsModernVerticalBtnNextList.forEach(wizardIconsModernVerticalBtnNext => {
-        wizardIconsModernVerticalBtnNext.addEventListener('click', event => {
-          verticalModernIconsStepper.next();
-        });
-      });
-    }
-    if (wizardIconsModernVerticalBtnPrevList) {
-      wizardIconsModernVerticalBtnPrevList.forEach(wizardIconsModernVerticalBtnPrev => {
-        wizardIconsModernVerticalBtnPrev.addEventListener('click', event => {
-          verticalModernIconsStepper.previous();
-        });
-      });
-    }
-    if (wizardIconsModernVerticalBtnSubmit) {
-      wizardIconsModernVerticalBtnSubmit.addEventListener('click', event => {
-        alert('Submitted..!!');
-      });
-    }
-  }
+  // Initialize all wizards
+  initializeWizard('.wizard-icons-example');
+  initializeWizard('.wizard-vertical-icons-example');
+  // initializeWizard('.wizard-modern-icons-example');
+  initializeWizard('.wizard-modern-vertical-icons-example');
 })();

@@ -1,7 +1,3 @@
-/**
- *  Form Wizard
- */
-
 'use strict';
 
 (function () {
@@ -10,15 +6,17 @@
 
   // Wizard Validation
   // --------------------------------------------------------------------
-  const wizardValidation = document.querySelector('#wizard-validation');
+  const wizardValidation = document.querySelector('.wizard-modern');
   if (typeof wizardValidation !== undefined && wizardValidation !== null) {
     // Wizard form
-    const wizardValidationForm = wizardValidation.querySelector('#wizard-validation-form');
+    const wizardValidationForm = wizardValidation.querySelector('form');
     // Wizard steps
-    const wizardValidationFormStep1 = wizardValidationForm.querySelector('#account-details-validation');
-    const wizardValidationFormStep2 = wizardValidationForm.querySelector('#personal-info-validation');
-    const wizardValidationFormStep3 = wizardValidationForm.querySelector('#social-links-validation');
-    // Wizard next prev button
+    const wizardValidationFormStep1 = wizardValidationForm.querySelector('#account-details-vertical-modern');
+    const wizardValidationFormStep2 = wizardValidationForm.querySelector('#personal-info-vertical-modern');
+    const wizardValidationFormStep3 = wizardValidationForm.querySelector('#demographic-info-vertical-modern');
+    const wizardValidationFormStep4 = wizardValidationForm.querySelector('#dynamic-filters-vertical-modern');
+    const wizardValidationFormStep5 = wizardValidationForm.querySelector('#creative-vertical-modern');
+    // Wizard next/prev buttons
     const wizardValidationNext = [].slice.call(wizardValidationForm.querySelectorAll('.btn-next'));
     const wizardValidationPrev = [].slice.call(wizardValidationForm.querySelectorAll('.btn-prev'));
 
@@ -26,52 +24,46 @@
       linear: true
     });
 
-    // Account details
+    // Step 1: Campaign Details
     const FormValidation1 = FormValidation.formValidation(wizardValidationFormStep1, {
       fields: {
-        formValidationUsername: {
+        campaign_name: {
           validators: {
             notEmpty: {
-              message: 'The name is required'
+              message: 'The campaign name is required'
             },
             stringLength: {
-              min: 6,
-              max: 30,
-              message: 'The name must be more than 6 and less than 30 characters long'
-            },
-            regexp: {
-              regexp: /^[a-zA-Z0-9 ]+$/,
-              message: 'The name can only consist of alphabetical, number and space'
+              min: 3,
+              max: 100,
+              message: 'The campaign name must be between 3 and 100 characters'
             }
           }
         },
-        formValidationEmail: {
+        brand_name: {
           validators: {
             notEmpty: {
-              message: 'The Email is required'
+              message: 'The brand name is required'
             },
-            emailAddress: {
-              message: 'The value is not a valid email address'
+            stringLength: {
+              min: 3,
+              max: 100,
+              message: 'The brand name must be between 3 and 100 characters'
             }
           }
         },
-        formValidationPass: {
+        channel: {
           validators: {
             notEmpty: {
-              message: 'The password is required'
+              message: 'Please select a channel'
             }
           }
         },
-        formValidationConfirmPass: {
+        brand_logo: {
           validators: {
-            notEmpty: {
-              message: 'The Confirm Password is required'
-            },
-            identical: {
-              compare: function () {
-                return wizardValidationFormStep1.querySelector('[name="formValidationPass"]').value;
-              },
-              message: 'The password and its confirm are not the same'
+            file: {
+              extension: 'png,jpg,svg',
+              type: 'image/png,image/jpeg,image/svg+xml',
+              message: 'Please upload a valid image file (PNG, JPG, SVG)'
             }
           }
         }
@@ -79,55 +71,131 @@
       plugins: {
         trigger: new FormValidation.plugins.Trigger(),
         bootstrap5: new FormValidation.plugins.Bootstrap5({
-          // Use this for enabling/changing valid/invalid class
-          // eleInvalidClass: '',
           eleValidClass: '',
-          rowSelector: '.col-sm-6'
+          rowSelector: '.col-sm-6, .col-sm-12'
         }),
         autoFocus: new FormValidation.plugins.AutoFocus(),
         submitButton: new FormValidation.plugins.SubmitButton()
       },
       init: instance => {
         instance.on('plugins.message.placed', function (e) {
-          //* Move the error message out of the `input-group` element
           if (e.element.parentElement.classList.contains('input-group')) {
             e.element.parentElement.insertAdjacentElement('afterend', e.messageElement);
           }
         });
       }
     }).on('core.form.valid', function () {
-      // Jump to the next step when all fields in the current step are valid
+      console.log('form-wizard-validation', 'step 1 done');
       validationStepper.next();
     });
 
-    // Personal info
+    // Step 2: Projection Info
     const FormValidation2 = FormValidation.formValidation(wizardValidationFormStep2, {
       fields: {
-        formValidationFirstName: {
+        client_view_name: {
           validators: {
             notEmpty: {
-              message: 'The first name is required'
+              message: 'The client view name is required'
+            },
+            stringLength: {
+              min: 3,
+              max: 100,
+              message: 'The client view name must be between 3 and 100 characters'
             }
           }
         },
-        formValidationLastName: {
+        impressions: {
           validators: {
             notEmpty: {
-              message: 'The last name is required'
+              message: 'The impressions field is required'
+            },
+            integer: {
+              message: 'Please enter a valid number of impressions'
+            },
+            greaterThan: {
+              min: 0,
+              message: 'Impressions must be greater than 0'
             }
           }
         },
-        formValidationCountry: {
+        ctr: {
           validators: {
             notEmpty: {
-              message: 'The Country is required'
+              message: 'The CTR percentage is required'
+            },
+            numeric: {
+              message: 'Please enter a valid number'
+            },
+            between: {
+              min: 1,
+              max: 100,
+              message: 'CTR must be between 0 and 100'
             }
           }
         },
-        formValidationLanguage: {
+        vtr: {
+          validators: {
+            numeric: {
+              message: 'Please enter a valid number'
+            },
+            between: {
+              min: 0,
+              max: 100,
+              message: 'VTR must be between 0 and 100'
+            }
+          }
+        },
+        budget_type: {
           validators: {
             notEmpty: {
-              message: 'The Languages is required'
+              message: 'The budget type is required'
+            }
+          }
+        },
+        total_budget: {
+          validators: {
+            notEmpty: {
+              message: 'The budget is required'
+            },
+            numeric: {
+              message: 'Please enter a valid number'
+            },
+            greaterThan: {
+              min: 1,
+              message: 'budget must be greater than 0'
+            }
+          }
+        },
+        start_date: {
+          validators: {
+            notEmpty: {
+              message: 'The start date is required'
+            },
+            date: {
+              format: 'YYYY-MM-DD',
+              message: 'Please enter a valid date'
+            }
+          }
+        },
+        end_date: {
+          validators: {
+            notEmpty: {
+              message: 'The end date is required'
+            },
+            date: {
+              format: 'YYYY-MM-DD',
+              message: 'Please enter a valid date'
+            },
+            callback: {
+              message: 'End date must be after start date',
+              callback: function (input) {
+                const startDate = wizardValidationFormStep2.querySelector('[name="start_date"]').value;
+                const endDate = input.value;
+                if (startDate && endDate) {
+                  return new Date(endDate) >= new Date(startDate);
+                }
+                return true;
+              }
             }
           }
         }
@@ -135,31 +203,216 @@
       plugins: {
         trigger: new FormValidation.plugins.Trigger(),
         bootstrap5: new FormValidation.plugins.Bootstrap5({
-          // Use this for enabling/changing valid/invalid class
-          // eleInvalidClass: '',
           eleValidClass: '',
-          rowSelector: '.col-sm-6'
+          rowSelector: '.col-md-3, .col-sm-4'
         }),
         autoFocus: new FormValidation.plugins.AutoFocus(),
         submitButton: new FormValidation.plugins.SubmitButton()
       }
     }).on('core.form.valid', function () {
-      // Jump to the next step when all fields in the current step are valid
+      var dateTotal = document.getElementById('dateTotal').textContent;
+      if (dateTotal != 100) {
+        Swal.fire({
+          icon: 'error',
+          title: 'error',
+          text: `Date percentages must total exactly 100% to save.`
+        });
+        return;
+      }
       validationStepper.next();
     });
 
-    // Bootstrap Select (i.e Language select)
+    // Step 3: Demographic Info
+    const FormValidation3 = FormValidation.formValidation(wizardValidationFormStep3, {
+      fields: {
+        master: {
+          validators: {
+            notEmpty: {
+              message: 'Please select a master'
+            }
+          }
+        },
+        'locations[]': {
+          validators: {
+            notEmpty: {
+              message: 'Please select at least one location'
+            }
+          }
+        },
+        'gender[]': {
+          validators: {
+            notEmpty: {
+              message: 'Please select at least one gender'
+            }
+          }
+        },
+        'gender_percentages[]': {
+          validators: {
+            callback: {
+              message: 'Gender percentages must sum to 100%',
+              callback: function (input) {
+                const inputs = document.querySelectorAll('#gender-percentages .percentage-input');
+                if (inputs.length === 0) {
+                  return true; // No percentages to validate if no genders selected
+                }
+                let total = 0;
+                inputs.forEach(input => {
+                  const value = parseInt(input.value) || 0;
+                  total += Math.max(0, Math.min(100, value)); // Clamp between 0 and 100
+                });
+                console.log(total);
+                return total === 100;
+              }
+            }
+          }
+        }
+      },
+      plugins: {
+        trigger: new FormValidation.plugins.Trigger(),
+        bootstrap5: new FormValidation.plugins.Bootstrap5({
+          eleValidClass: '',
+          rowSelector: '.col-12'
+        }),
+        autoFocus: new FormValidation.plugins.AutoFocus(),
+        submitButton: new FormValidation.plugins.SubmitButton()
+      }
+    }).on('core.form.valid', function () {
+      const inputs = document.querySelectorAll('#gender-percentages .percentage-input');
+      const hasGenders = document.querySelector('#gender').selectedOptions.length > 0;
+      if (hasGenders) {
+        let total = 0;
+        inputs.forEach(input => {
+          const value = parseInt(input.value) || 0;
+          total += Math.max(0, Math.min(100, value));
+        });
+        if (total !== 100) {
+          const warning = document.getElementById('gender-percentage-warning');
+          if (warning) {
+            warning.style.display = 'block';
+          }
+          return;
+        }
+      }
+      validationStepper.next();
+    });
+
+    // Step 4: Dynamic Filters (No mandatory fields, so minimal validation)
+    const FormValidation4 = FormValidation.formValidation(wizardValidationFormStep4, {
+      fields: {},
+      plugins: {
+        trigger: new FormValidation.plugins.Trigger(),
+        bootstrap5: new FormValidation.plugins.Bootstrap5({
+          eleValidClass: '',
+          rowSelector: '.col-12'
+        }),
+        autoFocus: new FormValidation.plugins.AutoFocus(),
+        submitButton: new FormValidation.plugins.SubmitButton()
+      }
+    }).on('core.form.valid', function () {
+      validationStepper.next();
+    });
+
+    // Step 5: Creatives Details
+    const FormValidation5 = FormValidation.formValidation(wizardValidationFormStep5, {
+      fields: {
+        'creative_files[]': {
+          validators: {
+            callback: {
+              message: 'Please click the Upload button to add selected creative files',
+              callback: function (input) {
+                const fileInput = document.getElementById('creative-file');
+                const creativeContainer = document.getElementById('creative-details-container');
+                const hasFiles = fileInput.files.length > 0;
+                const hasCreatives = creativeContainer.querySelectorAll('.row').length > 0;
+                // If files are selected but no rows are added, validation fails
+                if (hasFiles && !hasCreatives) {
+                  return false;
+                }
+                // If no files are selected, require at least one creative row
+                if (!hasFiles && !hasCreatives) {
+                  return false;
+                }
+                return true;
+              }
+            },
+            file: {
+              extension: 'png,jpg,gif,mp4',
+              type: 'image/png,image/jpeg,image/gif,video/mp4',
+              message: 'Please upload valid creative files (PNG, JPG, GIF, MP4)'
+            }
+          }
+        }
+      },
+      plugins: {
+        trigger: new FormValidation.plugins.Trigger(),
+        bootstrap5: new FormValidation.plugins.Bootstrap5({
+          eleValidClass: '',
+          rowSelector: '.col-12'
+        }),
+        autoFocus: new FormValidation.plugins.AutoFocus(),
+        submitButton: new FormValidation.plugins.SubmitButton()
+      }
+    }).on('core.form.valid', function () {
+      const totalPercentage = parseFloat(document.getElementById('total-percentage').innerText);
+      const creativeContainer = document.getElementById('creative-details-container');
+      const hasCreatives = creativeContainer.querySelectorAll('.row').length > 0;
+
+      // Check if total percentage is 100 when creatives are added
+      if (hasCreatives && totalPercentage !== 100) {
+        document.getElementById('percentage-warning').style.display = 'block';
+        return;
+      }
+
+      // Prevent submission if no creatives are added
+      if (!hasCreatives) {
+        document
+          .getElementById('creative-file')
+          .parentElement.querySelector('.fv-plugins-message-container').innerText =
+          'Please upload at least one creative file.';
+        return;
+      }
+
+      // All good — submit the form
+      wizardValidationForm.submit();
+    });
+
+    // Prevent form submission on direct submit button click
+    wizardValidationForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      FormValidation5.validate().then(function (status) {
+        if (status === 'Valid') {
+          const totalPercentage = parseFloat(document.getElementById('total-percentage').innerText);
+          const creativeContainer = document.getElementById('creative-details-container');
+          const hasCreatives = creativeContainer.querySelectorAll('.row').length > 0;
+
+          if (hasCreatives && totalPercentage === 100) {
+            wizardValidationForm.submit();
+          } else {
+            if (!hasCreatives) {
+              document
+                .getElementById('creative-file')
+                .parentElement.querySelector('.fv-plugins-message-container').innerText =
+                'Please upload at least one creative file.';
+            } else if (totalPercentage !== 100) {
+              document.getElementById('percentage-warning').style.display = 'block';
+            }
+          }
+        }
+      });
+    });
+
+    // Bootstrap Select
     if (selectPicker.length) {
       selectPicker.each(function () {
         var $this = $(this);
         $this.selectpicker().on('change', function () {
-          FormValidation2.revalidateField('formValidationLanguage');
+          FormValidation3.revalidateField('master');
         });
       });
-      handleBootstrapSelectEvents();
     }
 
-    // select2
+    // Select2
     if (select2.length) {
       select2.each(function () {
         var $this = $(this);
@@ -167,95 +420,38 @@
         $this.wrap('<div class="position-relative"></div>');
         $this
           .select2({
-            placeholder: 'Select an country',
+            placeholder: $this.attr('id') === 'gender' ? 'Select gender' : 'Select locations',
             dropdownParent: $this.parent()
           })
           .on('change', function () {
-            // Revalidate the color field when an option is chosen
-            FormValidation2.revalidateField('formValidationCountry');
+            if ($this.attr('id') === 'gender') {
+              FormValidation3.revalidateField('gender[]');
+            } else {
+              FormValidation3.revalidateField('locations[]');
+            }
           });
       });
     }
 
-    // Social links
-    const FormValidation3 = FormValidation.formValidation(wizardValidationFormStep3, {
-      fields: {
-        formValidationTwitter: {
-          validators: {
-            notEmpty: {
-              message: 'The Twitter URL is required'
-            },
-            uri: {
-              message: 'The URL is not proper'
-            }
-          }
-        },
-        formValidationFacebook: {
-          validators: {
-            notEmpty: {
-              message: 'The Facebook URL is required'
-            },
-            uri: {
-              message: 'The URL is not proper'
-            }
-          }
-        },
-        formValidationGoogle: {
-          validators: {
-            notEmpty: {
-              message: 'The Google URL is required'
-            },
-            uri: {
-              message: 'The URL is not proper'
-            }
-          }
-        },
-        formValidationLinkedIn: {
-          validators: {
-            notEmpty: {
-              message: 'The LinkedIn URL is required'
-            },
-            uri: {
-              message: 'The URL is not proper'
-            }
-          }
-        }
-      },
-      plugins: {
-        trigger: new FormValidation.plugins.Trigger(),
-        bootstrap5: new FormValidation.plugins.Bootstrap5({
-          // Use this for enabling/changing valid/invalid class
-          // eleInvalidClass: '',
-          eleValidClass: '',
-          rowSelector: '.col-sm-6'
-        }),
-        autoFocus: new FormValidation.plugins.AutoFocus(),
-        submitButton: new FormValidation.plugins.SubmitButton()
-      }
-    }).on('core.form.valid', function () {
-      // You can submit the form
-      // wizardValidationForm.submit()
-      // or send the form data to server via an Ajax request
-      // To make the demo simple, I just placed an alert
-      alert('Submitted..!!');
-    });
-
+    // Navigation
     wizardValidationNext.forEach(item => {
       item.addEventListener('click', event => {
-        // When click the Next button, we will validate the current step
         switch (validationStepper._currentIndex) {
           case 0:
             FormValidation1.validate();
             break;
-
           case 1:
             FormValidation2.validate();
             break;
-
           case 2:
             FormValidation3.validate();
             break;
-
+          case 3:
+            FormValidation4.validate();
+            break;
+          case 4:
+            FormValidation5.validate();
+            break;
           default:
             break;
         }
@@ -264,20 +460,7 @@
 
     wizardValidationPrev.forEach(item => {
       item.addEventListener('click', event => {
-        switch (validationStepper._currentIndex) {
-          case 2:
-            validationStepper.previous();
-            break;
-
-          case 1:
-            validationStepper.previous();
-            break;
-
-          case 0:
-
-          default:
-            break;
-        }
+        validationStepper.previous();
       });
     });
   }

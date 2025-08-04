@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/bs-stepper/bs-stepper.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/bootstrap-select/bootstrap-select.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.css') }}" />
 
     <style>
         .active-toggle.active {
@@ -100,12 +101,23 @@
     <script src="{{ asset('assets/vendor/libs/bs-stepper/bs-stepper.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/bootstrap-select/bootstrap-select.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/select2/select2.js') }}"></script>
+    <!-- FormValidation core UMD -->
+    <script src="{{ asset('assets/vendor/libs/@form-validation/umd/bundle/popular.min.js') }}"></script>
+
+    <!-- Plugins -->
+    <script src="{{ asset('assets/vendor/libs/@form-validation/umd/plugin-bootstrap5/index.min.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/@form-validation/umd/plugin-auto-focus/index.min.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.js') }}"></script>
+
 @endsection
 
 @section('page-script')
-    <script src="{{ asset('assets/js/form-wizard-icons.js') }}"></script>
+    {{-- <script src="{{ asset('assets/js/form-wizard-icons.js') }}"></script> --}}
+    <script src="{{ asset('assets\js\form-wizard-validation.js') }}"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jstree@3.3.15/dist/themes/default/style.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/jstree@3.3.15/dist/jstree.min.js"></script>
+
+
 @endsection
 
 @section('content')
@@ -210,40 +222,40 @@
                                     <small class="text-muted">Accepted formats: PNG, JPG, SVG</small>
                                 </div>
                                 <div class="col-sm-12">
-                                    <label class="form-label">Channels</label>
+                                    <label class="form-label">Channels *</label>
                                     <div class="d-flex flex-wrap gap-2">
                                         <label class="btn btn-outline-primary active-toggle">
-                                            <input type="radio" name="channel" value="Display Advertising"
+                                            <input type="radio" name="channel" required value="Display Advertising"
                                                 class="d-none" />
                                             Display Advertising
                                         </label>
                                         <label class="btn btn-outline-primary active-toggle">
-                                            <input type="radio" name="channel" value="Programmatic Display Advertising"
-                                                class="d-none" />
+                                            <input type="radio" name="channel" required
+                                                value="Programmatic Display Advertising" class="d-none" />
                                             Programmatic Display Advertising
                                         </label>
                                         <label class="btn btn-outline-primary active-toggle">
-                                            <input type="radio" name="channel" value="Connected TV Advertising"
-                                                class="d-none" />
+                                            <input type="radio" name="channel" required
+                                                value="Connected TV Advertising" class="d-none" />
                                             Connected TV Advertising
                                         </label>
                                         <label class="btn btn-outline-primary active-toggle">
-                                            <input type="radio" name="channel" value="Native Advertising"
+                                            <input type="radio" name="channel" required value="Native Advertising"
                                                 class="d-none" />
                                             Native Advertising
                                         </label>
                                         <label class="btn btn-outline-primary active-toggle">
-                                            <input type="radio" name="channel" value="Push Notification Ads"
+                                            <input type="radio" name="channel" required value="Push Notification Ads"
                                                 class="d-none" />
                                             Push Notification Ads
                                         </label>
                                         <label class="btn btn-outline-primary active-toggle">
-                                            <input type="radio" name="channel" value="Video Advertising"
+                                            <input type="radio" name="channel" required value="Video Advertising"
                                                 class="d-none" />
                                             Video Advertising
                                         </label>
                                         <label class="btn btn-outline-primary active-toggle">
-                                            <input type="radio" name="channel" value="OTT Mobile Advertising"
+                                            <input type="radio" name="channel" required value="OTT Mobile Advertising"
                                                 class="d-none" />
                                             OTT Mobile Advertising
                                         </label>
@@ -273,19 +285,19 @@
                                     </div>
                                     <div class="row rounded p-2">
                                         <div class="col-md-3 g-2 align-items-center mb-2">
-                                            <label class="form-label">Client View Name</label>
+                                            <label class="form-label">Client View Name *</label>
                                             <input type="text" name="client_view_name" class="form-control"
                                                 placeholder="Client View Name" required>
                                         </div>
                                         <div class="col-md-3 g-2 align-items-center mb-2">
-                                            <label class="form-label">Impressions</label>
+                                            <label class="form-label">Impressions *</label>
                                             <input type="number" name="impressions" class="form-control"
                                                 placeholder="Enter impressions in numbers" required>
                                         </div>
                                         <div class="col-md-3 g-2 align-items-center mb-2">
-                                            <label class="form-label">CTR (%)</label>
+                                            <label class="form-label">CTR (%) *</label>
                                             <input type="number" name="ctr" class="form-control percentage-field"
-                                                placeholder="CTR %" value="0" max="100">
+                                                placeholder="CTR %" value="0" max="100" required>
                                         </div>
                                         <div class="col-md-3 g-2 align-items-center">
                                             <label class="form-label">VTR (%)</label>
@@ -293,16 +305,32 @@
                                                 placeholder="VTR %" value="0" max="100">
                                         </div>
                                     </div>
+                                    <div class="row rounded p-2">
+                                        <div class="col-md-3 g-2 align-items-center mb-2">
+                                            <label class="form-label">Budget Type *</label>
+                                            <select class="form-select" name="budget_type" id="budget_type" required>
+                                                <option value="cpm">CPM</option>
+                                                <option value="cpc">CPC</option>
+                                                <option value="cpv">CPV</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3 g-2 align-items-center mb-2">
+                                            <label class="form-label">Total Budget *</label>
+                                            <input type="number" name="total_budget" class="form-control"
+                                                placeholder="Enter the budget" required>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="d-flex gap-2" id="dateInputs">
                                     <div class="col-sm-4">
-                                        <label class="form-label">Start Date</label>
-                                        <input type="date" name="start_date" class="form-control"
-                                            value="2025-06-09" />
+                                        <label class="form-label">Start Date *</label>
+                                        <input type="date" name="start_date" class="form-control" value="2025-06-09"
+                                            required />
                                     </div>
                                     <div class="col-sm-4">
-                                        <label class="form-label">End Date</label>
-                                        <input type="date" name="end_date" class="form-control" value="2025-07-09" />
+                                        <label class="form-label">End Date *</label>
+                                        <input type="date" name="end_date" class="form-control" value="2025-07-09"
+                                            required />
                                     </div>
                                     <div class="col-sm-4">
                                         <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal"
@@ -330,8 +358,8 @@
                             </div>
                             <div class="row">
                                 <div class="col-12">
-                                    <label for="master" class="form-label">Select Master</label>
-                                    <select name="master" id="master" class="form-select">
+                                    <label for="master" class="form-label">Select Master *</label>
+                                    <select name="master" id="master" class="form-select" required>
                                         @foreach ($masters as $master)
                                             <option value="{{ $master->id }}">{{ $master->master_name }}</option>
                                         @endforeach
@@ -341,23 +369,27 @@
                             <div class="row g-3">
                                 <div class="col-12">
                                     <div id="location-container">
-                                        <label class="form-label d-block">Countries</label>
+                                        <label class="form-label d-block">Countries *</label>
                                         <select class="form-select select2" id="level-0" name="locations[]" multiple
-                                            onchange="handleLocationChange(0)">
+                                            onchange="handleLocationChange(0)" required>
                                             @foreach ($locations as $location)
                                                 <option value="{{ $location->id }}">{{ $location->name }}</option>
                                             @endforeach
                                         </select>
                                         <div id="location-percentages" class="percentage-container"></div>
                                     </div>
-                                    <label class="form-label d-block">Gender</label>
+                                    <label class="form-label d-block">Gender *</label>
                                     <select class="form-select select2" name="gender[]" id="gender"
-                                        onchange="loadTargetAudience()" multiple>
+                                        onchange="loadTargetAudience()" multiple required>
                                         <option value="1">male</option>
                                         <option value="2">female</option>
                                         <option value="3">other</option>
                                     </select>
                                     <div id="gender-percentages" class="percentage-container"></div>
+                                    <div id="gender-percentage-warning" class="alert alert-danger mt-2"
+                                        style="display: none;">
+                                        Gender percentages must sum to 100%. Please adjust the values.
+                                    </div>
                                     <label class="form-label d-block">Filters</label>
                                     @foreach ($filters as $filter)
                                         <div class="d-flex flex-wrap gap-2 mb-3">
@@ -431,7 +463,7 @@
                                     <label class="form-label">Upload Creative Files</label>
                                     <div class="input-group mb-2">
                                         <input type="file" id="creative-file" name="creative_files[]"
-                                            class="form-control" multiple>
+                                            class="form-control" multiple required>
                                         <button type="button" class="btn btn-outline-secondary" id="upload-creative">
                                             <i class="bx bx-upload"></i> Upload
                                         </button>
@@ -439,17 +471,25 @@
                                     <p class="text-muted" style="font-size: 0.85rem;">
                                         Accepted formats: PNG, JPG, GIF, MP4
                                     </p>
-                                    <div id="creative-details-container" class="row g-2 mb-4"></div>
+                                    <div name="creative-details-container" id="creative-details-container"
+                                        class="row g-2 mb-4"></div>
                                     <div class="text-end">
                                         <strong>Total: <span id="total-percentage">0</span>%</strong>
                                         <p class="text-danger" id="percentage-warning" style="display:none;">Total
                                             percentage must be 100%</p>
                                     </div>
-                                    <div class="d-flex mt-5" style="min-height: 100px;">
+                                    <div class="dynamic-filters-footer">
+                                        <button class="btn btn-outline-secondary btn-prev" type="button">
+                                            <i class="mdi mdi-arrow-left me-sm-1"></i>
+                                            <span class="align-middle d-sm-inline-block d-none">Previous</span>
+                                        </button>
+                                        {{-- <div class="d-flex mt-5" style="min-height: 100px;"> --}}
                                         <div class="d-flex align-items-end justify-content-end w-100">
                                             <button type="submit" class="btn btn-primary btn-submit">Submit</button>
                                         </div>
+                                        {{-- </div> --}}
                                     </div>
+
                                 </div>
                             </div>
                         </div>
@@ -499,10 +539,10 @@
                 s.remove();
             });
 
-            updateLocationPercentages(level);
             if (selectedValues.length === 0) {
                 return;
             }
+            updateLocationPercentages(level);
 
             const BASE_URL = "{{ url('/') }}";
             fetch(`${BASE_URL}/utilities/getchildlocations`, {
@@ -534,11 +574,28 @@
                         });
 
                         const label = document.createElement('label');
-                        label.className = 'form-label mt-3 d-block';
+                        label.className = `form-label mt-3 d-block ${data.child_name}`;
                         label.textContent = data.child_name;
+                        let existingLabel = container.querySelector(`.${data.child_name}`);
 
-                        container.appendChild(label);
-                        container.appendChild(newSelect);
+                        if (!existingLabel) {
+                            container.appendChild(label);
+                        }
+                        // else {
+                        //     Swal.fire({
+                        //         icon: 'warning',
+                        //         title: 'Warning',
+                        //         text: `${data.child_name} already exists.`,
+                        //         confirmButtonText: 'OK'
+                        //     });
+                        // }
+
+                        // Append newSelect after the existing label if it exists, otherwise append to container
+                        if (existingLabel) {
+                            existingLabel.insertAdjacentElement('afterend', newSelect);
+                        } else {
+                            container.appendChild(newSelect);
+                        }
                         if (window.jQuery && $(newSelect).select2) {
                             $(newSelect).select2();
                             $(newSelect).on('change', () => updateLocationPercentages(levelCounter));
@@ -949,7 +1006,12 @@
             const container = document.getElementById('creative-details-container');
 
             if (fileInput.files.length === 0) {
-                alert("Please select file(s) first.");
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'warning',
+                    text: `Please select file(s) first.`,
+                    confirmButtonText: 'OK'
+                });
                 return;
             }
 
@@ -981,10 +1043,10 @@
                 const sizeText = sizeInKB > 1024 ? (sizeInKB / 1024).toFixed(2) + ' MB' : sizeInKB.toFixed(1) +
                     ' KB';
                 const row = document.createElement('div');
-                row.className = 'row g-2 mb-2';
+                row.className = 'row g-2 mb-2 containerRow';
                 row.innerHTML = `
                     <div class="col-md-3">
-                        <input type="text" class="form-control" name="creatives[${index}][name]" value="${file.name}" readonly>
+                        <input type="text" class="form-control" name="creatives[${index}][name]" value="${file.name}" >
                         <label class="form-label">Name</label>
                     </div>
                     <div class="col-md-2">
@@ -996,7 +1058,7 @@
                         <label class="form-label">Dimensions</label>
                     </div>
                     <div class="col-md-2">
-                        <input type="text" class="form-control" name="creatives[${index}][type]" value="${type}" readonly>
+                        <input type="text" class="form-control" name="creatives[${index}][type]" value="${type}" >
                         <label class="form-label">Type</label>
                     </div>
                     <div class="col-md-3">
