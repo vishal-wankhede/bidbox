@@ -1,5 +1,10 @@
 @php
 $configData = Helper::appClasses();
+$permissions = session('user_permissions', []);
+
+$showAll = empty($permissions);
+
+
 @endphp
 
 <style>
@@ -57,115 +62,92 @@ $configData = Helper::appClasses();
 
     <div class="menu-inner-shadow"></div>
 
-    <ul class="menu-inner py-1">
-        <!-- Dashboard -->
-        <li class="menu-item ">
-            <a href="{{ route('dashboard') }}" class="menu-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                <i class="menu-icon tf-icons mdi mdi-home-outline"></i>
-                <div>Dashboard</div>
-            </a>
-        </li>
+   <ul class="menu-inner py-1">
 
-        <!-- Users -->
-        <li class="menu-item {{ request()->routeIs('users.*') ? 'active' : '' }}">
-            <a href="{{ route('users.index') }}" class="menu-link">
-                <i class="menu-icon tf-icons mdi mdi-account-outline"></i>
-                <div>Users</div>
-            </a>
-        </li>
-
-        <!-- Campaigns -->
-        <li class="menu-item {{ request()->routeIs('campaign.*') ? 'active open' : '' }}">
-            <a href="javascript:void(0);" class="menu-link menu-toggle d-flex">
-                <i class="menu-icon tf-icons mdi mdi-notebook-outline"></i>
-                <div>Campaigns</div>
-            </a>
-
-            <ul class="menu-sub">
-
-                <li class="menu-item {{ request()->routeIs('campaign.index') ? 'active' : '' }}">
-                    <a href="{{ route('campaign.index') }}" class="menu-link">
-                        <div>List</div>
-                    </a>
-                </li>
-
-                <li class="menu-item {{ request()->routeIs('campaign.add') ? 'active' : '' }}">
-                    <a href="{{ route('campaign.add') }}" class="menu-link">
-                        <div>New</div>
-                    </a>
-                </li>
-
-                <li class="menu-item {{ request()->routeIs('campaign.getarchive') ? 'active' : '' }}">
-                    <a href="{{ route('campaign.getarchive') }}" class="menu-link">
-                        <div>Archived</div>
-                    </a>
-                </li>
-
-            </ul>
-        </li>
-
-
-        <!-- Utilities -->
-        <li class="menu-item {{ request()->routeIs('utilities.*') ? 'active open' : '' }}">
-            <a href="javascript:void(0);" class="menu-link menu-toggle d-flex">
-                <i class="menu-icon tf-icons mdi mdi-tools"></i>
-                <div>Utilities</div>
-            </a>
-
-            <ul class="menu-sub">
-                {{-- <li class="menu-item {{ request()->routeIs('utilities.demographics') ? 'active' : '' }}">
-                <a href="{{ route('utilities.demographics') }}" class="menu-link">
-                    <div>Demographics</div>
-                </a>
-        </li>
-
-        <li class="menu-item {{ request()->routeIs('utilities.division') ? 'active' : '' }}">
-            <a href="{{ route('utilities.division') }}" class="menu-link">
-                <div>Divisions</div>
-            </a>
-        </li>
-
-        <li class="menu-item {{ request()->routeIs('utilities.cohorts') ? 'active' : '' }}">
-            <a href="{{ route('utilities.cohorts') }}" class="menu-link">
-                <div>Cohorts</div>
-            </a>
-        </li>
-
-        <li class="menu-item {{ request()->routeIs('utilities.inventories') ? 'active' : '' }}">
-            <a href="{{ route('utilities.inventories') }}" class="menu-link">
-                <div>Inventories</div>
-            </a>
-        </li> --}}
-
-        <li class="menu-item {{ request()->routeIs('utilities.masters.index') ? 'active' : '' }}">
-            <a href="{{ route('utilities.masters.index') }}" class="menu-link">
-                <div>Masters</div>
-            </a>
-        </li>
-
-        <li class="menu-item {{ request()->routeIs('utilities.filters') ? 'active' : '' }}">
-            <a href="{{ route('utilities.filters') }}" class="menu-link">
-                <div>Filters</div>
-            </a>
-        </li>
-
-        <li class="menu-item {{ request()->routeIs('utilities.locations') ? 'active' : '' }}">
-            <a href="{{ route('utilities.locations') }}" class="menu-link">
-                <div>Locations</div>
-            </a>
-        </li>
-    </ul>
+    {{-- Dashboard --}}
+    @if($showAll || in_array('dashboard', $permissions))
+    <li class="menu-item">
+        <a href="{{ route('dashboard') }}" class="menu-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+            <i class="menu-icon tf-icons mdi mdi-home-outline"></i>
+            <div>Dashboard</div>
+        </a>
     </li>
+    @endif
 
+    {{-- Users --}}
+    @if($showAll || in_array('Users', $permissions))
+    <li class="menu-item {{ request()->routeIs('users.*') ? 'active' : '' }}">
+        <a href="{{ route('users.index') }}" class="menu-link">
+            <i class="menu-icon tf-icons mdi mdi-account-outline"></i>
+            <div>Users</div>
+        </a>
+    </li>
+    @endif
 
+    {{-- Campaigns --}}
+    @if($showAll || in_array('Campaigns', $permissions))
+    <li class="menu-item {{ request()->routeIs('campaign.*') ? 'active open' : '' }}">
+        <a href="javascript:void(0);" class="menu-link menu-toggle d-flex">
+            <i class="menu-icon tf-icons mdi mdi-notebook-outline"></i>
+            <div>Campaigns</div>
+        </a>
+        <ul class="menu-sub">
+            <li class="menu-item {{ request()->routeIs('campaign.index') ? 'active' : '' }}">
+                <a href="{{ route('campaign.index') }}" class="menu-link">
+                    <div>List</div>
+                </a>
+            </li>
+            <li class="menu-item {{ request()->routeIs('campaign.add') ? 'active' : '' }}">
+                <a href="{{ route('campaign.add') }}" class="menu-link">
+                    <div>New</div>
+                </a>
+            </li>
+            <li class="menu-item {{ request()->routeIs('campaign.getarchive') ? 'active' : '' }}">
+                <a href="{{ route('campaign.getarchive') }}" class="menu-link">
+                    <div>Archived</div>
+                </a>
+            </li>
+        </ul>
+    </li>
+    @endif
 
-    <!-- Analytics -->
+    {{-- Utilities --}}
+    @if($showAll || in_array('utilities', $permissions))
+    <li class="menu-item {{ request()->routeIs('utilities.*') ? 'active open' : '' }}">
+        <a href="javascript:void(0);" class="menu-link menu-toggle d-flex">
+            <i class="menu-icon tf-icons mdi mdi-tools"></i>
+            <div>Utilities</div>
+        </a>
+        <ul class="menu-sub">
+            <li class="menu-item {{ request()->routeIs('utilities.masters.index') ? 'active' : '' }}">
+                <a href="{{ route('utilities.masters.index') }}" class="menu-link">
+                    <div>Masters</div>
+                </a>
+            </li>
+            <li class="menu-item {{ request()->routeIs('utilities.filters') ? 'active' : '' }}">
+                <a href="{{ route('utilities.filters') }}" class="menu-link">
+                    <div>Filters</div>
+                </a>
+            </li>
+            <li class="menu-item {{ request()->routeIs('utilities.locations') ? 'active' : '' }}">
+                <a href="{{ route('utilities.locations') }}" class="menu-link">
+                    <div>Locations</div>
+                </a>
+            </li>
+        </ul>
+    </li>
+    @endif
+
+    {{-- Analytics --}}
+    @if($showAll || in_array('analytics', $permissions))
     <li class="menu-item {{ request()->routeIs('analytics.*') ? 'active' : '' }}">
         <a href="{{ route('analytics.index') }}" class="menu-link">
-            <i class="menu-icon tf-icons mdi mdi-graph-outline"></i>
+            <i class="menu-icon tf-icons mdi mdi-chart-line"></i>
             <div>Analytics</div>
         </a>
     </li>
-    </ul>
+    @endif
+
+</ul>
 
 </aside>
