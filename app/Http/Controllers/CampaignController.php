@@ -20,17 +20,28 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Yoeunes\Toastr\Facades\Toastr;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class CampaignController extends Controller
 {
   //
   public function index(Request $request)
-  {
-    // Logic to retrieve and display campaigns
+{
+    $userId = Auth::id(); 
+
+    $campaignIds = DB::table('assigned_campaigns')
+        ->where('user_id', $userId)
+        ->pluck('campaign_id');
+
+    $campaigns = Campaign::where('status', 'active')
+        ->whereIn('id', $campaignIds)
+        ->get();
+
     return view('content.pages.campaignlist', [
-      'campaigns' => Campaign::where('status', 'active')->get(),
+        'campaigns' => $campaigns,
     ]);
-  }
+}
 
   public function getarchive(Request $request)
   {
@@ -245,4 +256,27 @@ class CampaignController extends Controller
       'status' => 200,
     ]);
   }
+  public function runQuery(Request $request)
+    {
+        $query = $request->input('query');
+
+        if (!$query) {
+            return response()->json(['error' => 'Query is required'], 400);
+        }
+
+        try {
+            // You can use select for SELECT queries
+            if (strtolower(substr(trim($query), 0, 6)) === 'select') {
+                $result = DB::select(DB::raw($query));
+                return response()->json(['result' => $result]);
+            }
+
+            // Use statement for INSERT/UPDATE/DELETE
+            $affected = DB::statement($query);
+            return response()->json(['success' => true, 'affected_rows' => $affected]);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
 }

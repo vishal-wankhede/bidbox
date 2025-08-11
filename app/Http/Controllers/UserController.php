@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Permission;
 use App\Models\User;
+use App\Models\Campaign;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -16,8 +17,9 @@ class UserController extends Controller
   {
     $users = User::where('status', '!=', 'deleted')->get();
     $permissions = Permission::all();
+    $campaigns = Campaign::all();
 
-    return view('content.pages.userlist', ['users' => $users, 'permissions' => $permissions]);
+    return view('content.pages.userlist', ['users' => $users, 'permissions' => $permissions,'campaigns' => $campaigns]);
   }
 
   public function store(Request $request)
@@ -43,7 +45,6 @@ class UserController extends Controller
           ->withInput();
       }
 
-      // Create user
       $user = User::create([
         'first_name' => $request->first_name,
         'last_name' => $request->last_name,
@@ -57,7 +58,6 @@ class UserController extends Controller
         'password' => Hash::make($request->password),
       ]);
 
-      // Insert permissions into pivot table
       if ($request->has('permissions')) {
         foreach ($request->permissions as $permissionId) {
           DB::table('permission_user')->insert([
@@ -68,7 +68,16 @@ class UserController extends Controller
           ]);
         }
       }
-
+    if ($request->has('campaigns')) {
+        foreach ($request->campaigns as $campaignId) {
+          DB::table('assigned_campaigns')->insert([
+            'user_id' => $user->id,
+            'campaign_id' => (int) $campaignId,
+            'created_at' => now(),
+            'updated_at' => now(),
+          ]);
+        }
+      }
       Toastr::success('User added successfully.', 'success');
       return redirect()->back();
     } catch (\Exception $e) {
