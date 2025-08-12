@@ -28,7 +28,7 @@ class CampaignController extends Controller
   //
   public function index(Request $request)
 {
-    $userId = Auth::id(); 
+    $userId = Auth::id();
 
     $campaignIds = DB::table('assigned_campaigns')
         ->where('user_id', $userId)
@@ -68,6 +68,8 @@ class CampaignController extends Controller
   public function store(Request $request)
   {
     // return $request->all();
+    $userId = Auth::id();
+
     $validator = Validator::make($request->all(), [
       'campaign_name' => 'required|string|max:255',
       'brand_name' => 'required|string|max:255',
@@ -154,6 +156,13 @@ class CampaignController extends Controller
         ]);
       }
     }
+
+    DB::table('assigned_campaigns')->insert([
+      'user_id' => $userId,
+      'campaign_id' => (int) $campaign->id,
+      'created_at' => now(),
+      'updated_at' => now(),
+    ]);
 
     return redirect()
       ->back()
