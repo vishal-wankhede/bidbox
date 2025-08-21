@@ -1,5 +1,5 @@
 'use strict';
-
+// just to check
 (function () {
   const select2 = $('.select2'),
     selectPicker = $('.selectpicker');
@@ -119,16 +119,17 @@
         },
         ctr: {
           validators: {
-            notEmpty: {
-              message: 'The CTR percentage is required'
-            },
-            numeric: {
-              message: 'Please enter a valid number'
-            },
-            between: {
-              min: 0,
-              max: 100,
-              message: 'CTR must be between 0 and 100'
+            callback: {
+              message: 'The CTR percentage is required',
+              callback: function (input) {
+                const channel = wizardValidationFormStep1.querySelector('[name="channel"]').value;
+                // Skip validation if channel is Connected TV Advertising
+                if (channel === 'Connected TV Advertising') {
+                  return true; // valid even if empty
+                }
+                // Otherwise enforce numeric + range
+                return input.value !== '' && !isNaN(input.value) && input.value >= 0 && input.value <= 100;
+              }
             }
           }
         },

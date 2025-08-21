@@ -19,7 +19,11 @@ class UserController extends Controller
     $permissions = Permission::all();
     $campaigns = Campaign::all();
 
-    return view('content.pages.userlist', ['users' => $users, 'permissions' => $permissions,'campaigns' => $campaigns]);
+    return view('content.pages.userlist', [
+      'users' => $users,
+      'permissions' => $permissions,
+      'campaigns' => $campaigns,
+    ]);
   }
 
   public function store(Request $request)
@@ -68,9 +72,9 @@ class UserController extends Controller
           ]);
         }
       }
-    if ($request->has('campaigns')) {
+      if ($request->has('campaigns')) {
         foreach ($request->campaigns as $campaignId) {
-          DB::table('assigned_campaigns')->insert([
+          DB::table('campaign_user')->insert([
             'user_id' => $user->id,
             'campaign_id' => (int) $campaignId,
             'created_at' => now(),
@@ -109,6 +113,115 @@ class UserController extends Controller
     $user->save();
 
     Toastr::success('User archived successfully.', 'success');
+    return redirect()->back();
+  }
+
+  public function edit($id)
+  {
+    $user = User::where('id', $id)
+      ->with(['permissions', 'campaigns'])
+      ->firstOrFail();
+    $permissions = Permission::all();
+    $campaigns = Campaign::all();
+    $seletedPermissions = $user->permissions->pluck('id')->toArray();
+    $selectedCampaigns = $user->campaigns->pluck('id')->toArray();
+    return view('content.pages.edit_user', [
+      'user' => $user,
+      'permissions' => $permissions,
+      'campaigns' => $campaigns,
+      'selectedPermissions' => $seletedPermissions,
+      'selectedCampaigns' => $selectedCampaigns,
+    ]);
+  }
+
+  public function update(Request $request, $id)
+  {
+    $user = User::findOrFail($id);
+
+    $validator = Validator::make($request->all(), [
+      'first_name' => 'required|string|max:255',
+      'last_name' => 'required|string|max:255',
+      'email' => 'required|email|unique:users,email,' . $user->id,
+      'role' => 'required',
+      'legal_entity' => 'required',
+      'company_name' => 'nullable|string|max:255',
+      'country' => 'nullable|string|max:255',
+      'phone' => 'nullable|string|max:20|unique:users,phone,' . $user->id,
+    ]);
+
+    if ($validator->fails()) {
+      foreach ($validator->errors()->all() as $error) {
+        Toastr::error($error, 'Validation Error');
+      }
+      return redirect()
+        ->back()
+        ->withInput();
+    }
+
+    $user->update([
+      'first_name' => $request->first_name,
+      'last_name' => $request->last_name,
+      'email' => $request->email,
+      'role' => $request->role,
+      'legal_entity' => $request->legal_entity,
+      'company_name' => $request->company_name,
+      'country' => $request->country,
+      'phone' => $request->phone,
+    ]);
+
+    DB::table('permission_user')
+      ->where('user_id', $user->id)
+      ->delete();
+    if ($request->has('permissions')) {
+      foreach ($request->permissions as $permissionId) {
+        DB::table('permission_user')->insert([
+          'user_id' => $user->id,
+          'permission_id' => (int) $permissionId,
+          'created_at' => now(),
+          'updated_at' => now(),
+        ]);
+      }
+    }
+
+    DB::table('campaign_user')
+      ->where('user_id', $user->id)
+      ->delete();
+    if ($request->has('campaigns')) {
+      foreach ($request->campaigns as $campaignId) {
+        DB::table('campaign_user')->insert([
+          'user_id' => $user->id,
+          'campaign_id' => (int) $campaignId,
+          'created_at' => now(),
+          'updated_at' => now(),
+        ]);
+      }
+    }
+    Toastr::success('User updated successfully.', 'success');
+    return redirect()->back();
+  }
+
+  public function updatepassword(Request $request, $id)
+  {
+    $user = User::findOrFail($id);
+
+    $validator = Validator::make($request->all(), [
+      'new_password' => 'required|string|min:8',
+      'confirm_password' => 'required|string|min:8|same:new_password',
+    ]);
+
+    if ($validator->fails()) {
+      foreach ($validator->errors()->all() as $error) {
+        Toastr::error($error, 'Validation Error');
+      }
+      return redirect()
+        ->back()
+        ->withInput();
+    }
+
+    $user->password = Hash::make($request->password);
+    $user->save();
+
+    Toastr::success('Password updated successfully.', 'success');
     return redirect()->back();
   }
 

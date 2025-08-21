@@ -24,6 +24,8 @@ class Campaign extends Model
     'filtervalues',
     'division_value',
     'status',
+    'budget_type',
+    'budget',
   ];
 
   protected $casts = [
@@ -37,5 +39,10 @@ class Campaign extends Model
   public function creatives()
   {
     return $this->hasMany('App\Models\CampaignCreative', 'campaign_id');
+  }
+
+  public function users()
+  {
+    return $this->belongsToMany(User::class);
   }
 }

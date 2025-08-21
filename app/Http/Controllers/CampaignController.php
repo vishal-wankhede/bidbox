@@ -27,21 +27,21 @@ class CampaignController extends Controller
 {
   //
   public function index(Request $request)
-{
+  {
     $userId = Auth::id();
 
-    $campaignIds = DB::table('assigned_campaigns')
-        ->where('user_id', $userId)
-        ->pluck('campaign_id');
+    $campaignIds = DB::table('campaign_user')
+      ->where('user_id', $userId)
+      ->pluck('campaign_id');
 
     $campaigns = Campaign::where('status', 'active')
-        ->whereIn('id', $campaignIds)
-        ->get();
+      ->whereIn('id', $campaignIds)
+      ->get();
 
     return view('content.pages.campaignlist', [
-        'campaigns' => $campaigns,
+      'campaigns' => $campaigns,
     ]);
-}
+  }
 
   public function getarchive(Request $request)
   {
@@ -67,15 +67,15 @@ class CampaignController extends Controller
 
   public function store(Request $request)
   {
-    // return $request->all();
     $userId = Auth::id();
 
+    // return Auth::id();
     $validator = Validator::make($request->all(), [
       'campaign_name' => 'required|string|max:255',
       'brand_name' => 'required|string|max:255',
       'channel' => 'required|string',
       'impressions' => 'required|integer|min:1',
-      'ctr' => 'required|numeric|max:100|min:0',
+      'ctr' => 'required_unless:channel,Connected TV Advertising|numeric|max:100|min:0',
       'budget_type' => 'required|string',
       'total_budget' => 'required|numeric|min:0',
       'vtr' => 'nullable|numeric|max:100|min:0',
@@ -130,6 +130,8 @@ class CampaignController extends Controller
       'gender' => $request->gender_percentages ?? [],
       'filtervalues' => $request->filter_percentages ?? [],
       'division_value' => $request->division_percentages ?? [],
+      'budget_type' => $request->budget_type,
+      'budget' => $request->total_budget,
     ]);
 
     // ✅ Upload and store creative files
@@ -157,7 +159,7 @@ class CampaignController extends Controller
       }
     }
 
-    DB::table('assigned_campaigns')->insert([
+    DB::table('campaign_user')->insert([
       'user_id' => $userId,
       'campaign_id' => (int) $campaign->id,
       'created_at' => now(),
@@ -199,53 +201,33 @@ class CampaignController extends Controller
 
   public function getTargetAudience(Request $request)
   {
-    $filter_values = [];
-
-    // Merge regular filter values
-    if ($request->has('filters')) {
-      foreach ($request->filters as $filterId => $filterValues) {
-        $filter_values = array_merge($filter_values, $filterValues);
-      }
-    }
-    // Merge division filter values
-    if ($request->has('divisions')) {
-      foreach ($request->divisions as $divisionId => $divisionValues) {
-        $filter_values = array_merge($filter_values, $divisionValues);
-      }
-    }
-    // return $filter_values;
-    $temp = [];
-
-    $masterFilters = Filter::whereNull('parent_id')->get();
-
-    foreach ($masterFilters as $masterFilter) {
-      // Get child filter IDs using FIND_IN_SET
-      $childFilterIds = Filter::whereRaw('FIND_IN_SET(?, parent_master)', [$masterFilter->id])
-        ->pluck('id')
-        ->toArray();
-
-      // Include the master filter's own ID
-      $allFilterIds = array_merge($childFilterIds, [$masterFilter->id]);
-
-      // Get filter value IDs belonging to this group
-      $groupFilterValueIds = FilterValue::whereIn('filter_id', $allFilterIds)
-        ->pluck('id')
-        ->toArray();
-
-      // Get the intersection with the input $filter_values
-      $matchedArray = array_values(array_intersect($filter_values, $groupFilterValueIds));
-
-      // Optional: only store if match exists
-      // if (!empty($matchedArray)) {
-      $temp[$masterFilter->id] = $matchedArray;
-      // }
-    }
-
+    // return $request->all();
     // Proceed with master data
     $MasterData = MasterLocationDetail::whereIn('location_id', $request->locations)->where(
       'master_id',
       $request->master
     );
+    if ($request->has('divisions')) {
+      foreach ($request->divisions as $divisionId => $divisionValues) {
+        if ($divisionId == 12) {
+          $MasterData = $MasterData->where('filter_id', $divisionId)->whereIn('filter_value_id', $divisionValues);
+        } elseif ($divisionId == 3) {
+          // cohorts
+          $MasterData = $MasterData->where('filter_id', $divisionId)->whereIn('filter_value_id', $divisionValues);
+        }
+      }
+    }
+    if ($request->has('filters')) {
+      foreach ($request->filters as $filterId => $filterValues) {
+        if ($filterId == 2) {
+          //device type
+          $MasterData = $MasterData->where('filter_id', $filterId)->whereIn('filter_value_id', $filterValues);
+        } elseif ($filterId == 1) {
+          //age range
+          $MasterData = $MasterData->where('filter_id', $filterId)->whereIn('filter_value_id', $filterValues);
+        }
+      }
+    }
 
     $MasterData->get();
 
@@ -266,26 +248,25 @@ class CampaignController extends Controller
     ]);
   }
   public function runQuery(Request $request)
-    {
-        $query = $request->input('query');
+  {
+    $query = $request->input('query');
 
-        if (!$query) {
-            return response()->json(['error' => 'Query is required'], 400);
-        }
-
-        try {
-            // You can use select for SELECT queries
-            if (strtolower(substr(trim($query), 0, 6)) === 'select') {
-                $result = DB::select(DB::raw($query));
-                return response()->json(['result' => $result]);
-            }
-
-            // Use statement for INSERT/UPDATE/DELETE
-            $affected = DB::statement($query);
-            return response()->json(['success' => true, 'affected_rows' => $affected]);
-
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
+    if (!$query) {
+      return response()->json(['error' => 'Query is required'], 400);
     }
+
+    try {
+      // You can use select for SELECT queries
+      if (strtolower(substr(trim($query), 0, 6)) === 'select') {
+        $result = DB::select(DB::raw($query));
+        return response()->json(['result' => $result]);
+      }
+
+      // Use statement for INSERT/UPDATE/DELETE
+      $affected = DB::statement($query);
+      return response()->json(['success' => true, 'affected_rows' => $affected]);
+    } catch (\Exception $e) {
+      return response()->json(['error' => $e->getMessage()], 500);
+    }
+  }
 }

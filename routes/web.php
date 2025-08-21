@@ -50,6 +50,9 @@ Route::prefix('users')->group(function () {
   Route::get('/', [UserController::class, 'index'])->name('users.index');
   Route::post('/', [UserController::class, 'store'])->name('users.store');
   Route::get('/archive/{id}', [UserController::class, 'archive'])->name('users.archive');
+  Route::get('/edit/{id}', [UserController::class, 'edit'])->name('users.edit');
+  Route::post('/update/{id}', [UserController::class, 'update'])->name('users.update');
+  Route::post('/updatepassword/{id}', [UserController::class, 'updatepassword'])->name('users.updatepassword');
   Route::get('/delete/{id}', [UserController::class, 'destroy'])->name('users.delete');
 });
 

@@ -324,13 +324,11 @@
                                 <div class="d-flex gap-2" id="dateInputs">
                                     <div class="col-sm-4">
                                         <label class="form-label">Start Date *</label>
-                                        <input type="date" name="start_date" class="form-control" value="2025-06-09"
-                                            required />
+                                        <input type="date" name="start_date" class="form-control" required />
                                     </div>
                                     <div class="col-sm-4">
                                         <label class="form-label">End Date *</label>
-                                        <input type="date" name="end_date" class="form-control" value="2025-07-09"
-                                            required />
+                                        <input type="date" name="end_date" class="form-control" required />
                                     </div>
                                     <div class="col-sm-4">
                                         <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal"
