@@ -974,7 +974,7 @@
                             </label>
                             <label>
                                 <input type="radio" name="location_type" value="cities" class="location-radio"> City
-                            </label>
+                             </label>
                         </div>
                     </div>
 
