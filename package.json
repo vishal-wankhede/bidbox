@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "name": "Materialize",
   "version": "1.2.0",
   "private": true,
@@ -178,3 +179,17 @@
     "typeahead.js": "0.11.1"
   }
 }
+=======
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build"
+    },
+    "devDependencies": {
+        "axios": "^1.6.4",
+        "laravel-vite-plugin": "^1.0.0",
+        "vite": "^5.0.0"
+    }
+}
+>>>>>>> 8ecc85ec2fb9a7f7e6b352750a47589f9882aaba

@@ -4,7 +4,11 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
+<<<<<<< HEAD
     "content-hash": "5a71f7e62f4c4cdc0c194467dad63f6d",
+=======
+    "content-hash": "61130dc948ef4faf79d8509f9c4882c8",
+>>>>>>> 8ecc85ec2fb9a7f7e6b352750a47589f9882aaba
     "packages": [
         {
             "name": "brick/math",
@@ -2391,6 +2395,7 @@
             "time": "2024-11-21T10:36:35+00:00"
         },
         {
+<<<<<<< HEAD
             "name": "php-flasher/flasher",
             "version": "v1.15.14",
             "source": {
@@ -2580,6 +2585,8 @@
             "time": "2024-03-16T15:25:14+00:00"
         },
         {
+=======
+>>>>>>> 8ecc85ec2fb9a7f7e6b352750a47589f9882aaba
             "name": "phpoption/phpoption",
             "version": "1.9.3",
             "source": {
@@ -5773,6 +5780,7 @@
                 "source": "https://github.com/webmozarts/assert/tree/1.11.0"
             },
             "time": "2022-06-03T18:03:27+00:00"
+<<<<<<< HEAD
         },
         {
             "name": "yoeunes/toastr",
@@ -5879,6 +5887,8 @@
             ],
             "abandoned": "php-flasher/flasher-toastr-laravel",
             "time": "2024-03-16T15:29:23+00:00"
+=======
+>>>>>>> 8ecc85ec2fb9a7f7e6b352750a47589f9882aaba
         }
     ],
     "packages-dev": [
@@ -8403,7 +8413,11 @@
         }
     ],
     "aliases": [],
+<<<<<<< HEAD
     "minimum-stability": "dev",
+=======
+    "minimum-stability": "stable",
+>>>>>>> 8ecc85ec2fb9a7f7e6b352750a47589f9882aaba
     "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,

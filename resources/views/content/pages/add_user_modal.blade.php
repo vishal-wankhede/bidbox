@@ -4,6 +4,10 @@
     }
 </style>
 
+<<<<<<< HEAD
+=======
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+>>>>>>> 8ecc85ec2fb9a7f7e6b352750a47589f9882aaba
 
 <!-- Add User Modal -->
 <div class="modal fade" id="addUserModal" tabindex="-1" aria-hidden="true">
@@ -110,6 +114,22 @@
                         <h5>Assign Permissions</h5>
                         @include('_partials.permissions') <!-- Keep your existing permissions table here -->
                     </div>
+<<<<<<< HEAD
+=======
+                    <div class="col-12 mt-3" id="campaignListContainer" style="display: none;">
+                    @if(count($campaigns))
+                        <label for="campaigns">Select Campaigns:</label>
+                        <select name="campaigns[]" id="campaigns" class="form-control" multiple>
+                            @foreach($campaigns as $campaign)
+                                <option value="{{ $campaign->id }}">{{ $campaign->campaign_name }}</option>
+                            @endforeach
+                        </select>
+                    @else
+                        <p>No campaigns available</p>
+                    @endif
+                </div>
+
+>>>>>>> 8ecc85ec2fb9a7f7e6b352750a47589f9882aaba
 
                     <div class="col-12 text-center">
                         <button type="submit" class="btn btn-primary me-2">Submit</button>
@@ -123,3 +143,33 @@
     </div>
 </div>
 <!--/ Add User Modal -->
+<<<<<<< HEAD
+=======
+
+<script>
+    $(document).ready(function () {
+        $('#addUserModal').on('shown.bs.modal', function () {
+            $('#campaigns').select2({
+                placeholder: "Select Campaigns",
+                width: '100%',
+                dropdownParent: $('#addUserModal') // Ensures dropdown appears inside modal
+            });
+        });
+    });
+document.addEventListener('DOMContentLoaded', function () {
+    const analyticsCheckbox = document.getElementById('perm_5'); // Use ID instead of value
+    const campaignContainer = document.getElementById('campaignListContainer');
+
+    if (analyticsCheckbox) {
+        analyticsCheckbox.addEventListener('change', function () {
+            campaignContainer.style.display = this.checked ? 'block' : 'none';
+        });
+
+        // Show on load if already checked
+        if (analyticsCheckbox.checked) {
+            campaignContainer.style.display = 'block';
+        }
+    }
+});
+</script>
+>>>>>>> 8ecc85ec2fb9a7f7e6b352750a47589f9882aaba
