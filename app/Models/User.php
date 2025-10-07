@@ -62,4 +62,9 @@ class User extends Authenticatable
         return $this->permissions()->where('name', $permissionName)->exists();
     }
 
+    public function campaigns()
+    {
+        return $this->belongsToMany(Campaign::class);
+    }
+
 }

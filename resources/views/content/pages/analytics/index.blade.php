@@ -14,6 +14,33 @@
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/@form-validation/umd/styles/index.min.css') }}" />
 
+    <style>
+        .table th {
+            color: var(--grey-300) !important;
+        }
+    </style>
+
+    <style>
+        .dropdown-menu li {
+            position: relative;
+        }
+
+        .dropdown-menu .dropdown-submenu {
+            display: none;
+            position: absolute;
+            left: 100%;
+            top: -7px;
+        }
+
+        .dropdown-menu .dropdown-submenu-left {
+            right: 100%;
+            left: auto;
+        }
+
+        .dropdown-menu>li:hover>.dropdown-submenu {
+            display: block;
+        }
+    </style>
 @endsection
 
 @section('vendor-script')
@@ -483,27 +510,158 @@
         });
     </script>
 
-    <style>
-        .dropdown-menu li {
-            position: relative;
+    <script>
+        document.querySelectorAll('.location-radio').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const selected = this.value;
+
+                document.querySelectorAll('.location-list').forEach(list => {
+                    list.style.display = 'none';
+                });
+
+                const targetList = document.getElementById('list-' + selected);
+                if (targetList) {
+                    targetList.style.display = 'block';
+                }
+            });
+        });
+    </script>
+
+    {{-- <script>
+        const divisions = {!! $jsonDivisions !!};
+        const selectedItems = {};
+
+        function toggleDropdown(id) {
+            document.getElementById(id).classList.toggle('active');
         }
 
-        .dropdown-menu .dropdown-submenu {
-            display: none;
-            position: absolute;
-            left: 100%;
-            top: -7px;
+        function renderChips(type) {
+            const container = document.getElementById(`${type}SelectedDisplay`);
+            container.innerHTML = '';
+            Object.entries(selectedItems[type] || {}).forEach(([id, title]) => {
+                const chip = document.createElement('div');
+                chip.className = 'chip';
+                chip.innerHTML =
+                    `<span>${title}</span><span class="remove" onclick="removeItem('${type}', ${id})">✕</span>`;
+                container.appendChild(chip);
+            });
         }
 
-        .dropdown-menu .dropdown-submenu-left {
-            right: 100%;
-            left: auto;
+        function removeItem(type, id) {
+            delete selectedItems[type][id];
+            const input = document.getElementById(`${type}-${id}`);
+            if (input) input.checked = false;
+            renderChips(type);
         }
 
-        .dropdown-menu>li:hover>.dropdown-submenu {
-            display: block;
+        function handleCheckChange(e, type, id, title) {
+            if (!selectedItems[type]) selectedItems[type] = {};
+            if (e.target.checked) {
+                selectedItems[type][id] = title;
+            } else {
+                delete selectedItems[type][id];
+            }
+            renderChips(type);
         }
-    </style>
+
+        function renderDropdown(type, values) {
+            const container = document.getElementById(`${type}Dropdown`);
+            container.innerHTML = '';
+
+            Object.entries(values).forEach(([groupKey, groupVal]) => {
+                const groupDiv = document.createElement('div');
+                groupDiv.classList.add('mb-2');
+
+                const groupLabel = document.createElement('div');
+                groupLabel.classList.add('category-label', 'cursor-pointer');
+                groupLabel.innerText = groupKey;
+                groupLabel.style.cursor = 'pointer';
+
+                const groupWrapper = document.createElement('div');
+                groupWrapper.classList.add('ps-3', 'd-none');
+
+                groupLabel.onclick = () => {
+                    groupWrapper.classList.toggle('d-none');
+                };
+
+                if (Array.isArray(groupVal)) {
+                    // Direct array, render checkboxes
+                    groupVal.forEach(item => {
+                        const itemDiv = createCheckboxItem(type, item);
+                        groupWrapper.appendChild(itemDiv);
+                    });
+                } else {
+                    // Nested structure (e.g., B2B → Job → items)
+                    Object.entries(groupVal).forEach(([subGroupKey, items]) => {
+                        const subGroupLabel = document.createElement('div');
+                        subGroupLabel.classList.add('form-check', 'cursor-pointer');
+                        subGroupLabel.innerText = subGroupKey;
+                        subGroupLabel.style.cursor = 'pointer';
+
+                        const itemWrapper = document.createElement('div');
+                        itemWrapper.classList.add('ps-3', 'd-none');
+
+                        subGroupLabel.onclick = () => {
+                            itemWrapper.classList.toggle('d-none');
+                        };
+
+                        items.forEach(item => {
+                            const itemDiv = createCheckboxItem(type, item);
+                            itemWrapper.appendChild(itemDiv);
+                        });
+
+                        groupWrapper.appendChild(subGroupLabel);
+                        groupWrapper.appendChild(itemWrapper);
+                    });
+                }
+
+                groupDiv.appendChild(groupLabel);
+                groupDiv.appendChild(groupWrapper);
+                container.appendChild(groupDiv);
+            });
+        }
+
+
+        function createCheckboxItem(type, item) {
+            const itemDiv = document.createElement('div');
+            itemDiv.classList.add('form-check', 'form-check-sub');
+
+            const input = document.createElement('input');
+            input.type = 'checkbox';
+            input.className = 'form-check-input';
+            input.id = `${type}-${item.id}`;
+            input.onchange = (e) => handleCheckChange(e, type, item.id, item.title);
+
+            const label = document.createElement('label');
+            label.className = 'form-check-label';
+            label.setAttribute('for', `${type}-${item.id}`);
+            label.innerText = item.title;
+
+            itemDiv.appendChild(input);
+            itemDiv.appendChild(label);
+            return itemDiv;
+        }
+
+        // Initialize after DOM loads
+        document.addEventListener('DOMContentLoaded', () => {
+            divisions.forEach(division => {
+                const type = division.label.toLowerCase();
+                selectedItems[type] = {};
+                console.log(type)
+                renderDropdown(type, division.values);
+            });
+
+            // Close dropdowns on outside click
+            document.addEventListener('click', (e) => {
+                document.querySelectorAll('.form-multiselect').forEach(drop => {
+                    if (!drop.contains(e.target)) {
+                        drop.classList.remove('active');
+                    }
+                });
+            });
+        });
+    </script> --}}
+
 @endsection
 @section('content')
     <div class="container-fluid py-4">
@@ -511,9 +669,9 @@
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h4 class="mb-0">Campaign Report</h4>
             <div>
-                <span class="badge bg-light text-dark me-2">Active Campaign</span>
+                {{-- <span class="badge bg-light text-dark me-2">Active Campaign</span> --}}
                 <button class="btn btn-dark btn-sm me-1"><i class="bi bi-download me-1"></i>Export</button>
-                <button class="btn btn-outline-secondary btn-sm"><i class="bi bi-share me-1"></i>Share</button>
+                {{-- <button class="btn btn-outline-secondary btn-sm"><i class="bi bi-share me-1"></i>Share</button> --}}
             </div>
         </div>
 
@@ -524,12 +682,42 @@
                     <!-- Date Range -->
                     <div class="col-md-2">
                         <label class="form-label ">Date Range</label>
-                        <select class="form-select customSelect" id="date-range-select">
-                            <option value="7">Last 7 days</option>
-                            <option value="30">Last 30 days</option>
-                            <option value="month">This Month</option>
-                            <option value="custom">Custom Range</option>
+                        <select class="form-select customSelect" name="dateRange" id="date-range-select">
+                            <option>Select Date Range</option>
+                            <option value="7" @if ($selectedDateRange == 7) selected @endif>Last 7 days</option>
+                            <option value="30" @if ($selectedDateRange == 30) selected @endif>Last 30 days</option>
+                            <option value="month" @if ($selectedDateRange == 'month') selected @endif>This Month</option>
+                            <option value="custom" @if ($selectedDateRange == 'custom') selected @endif>Custom Range</option>
                         </select>
+                    </div>
+                    <!-- Custom Range Modal -->
+                    <div class="modal fade" id="customRangeModal" tabindex="-1" aria-labelledby="customRangeModalLabel"
+                        aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-sm">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Select Custom Range</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="row g-2">
+                                        <div class="col-12">
+                                            <label class="form-label">Start Date</label>
+                                            <input type="date" name="start_date" id="start_date" class="form-control" />
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label">End Date</label>
+                                            <input type="date" name="end_date" id="end_date" class="form-control" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer justify-content-end">
+                                    <button type="button" class="btn btn-primary btn-sm"
+                                        id="apply-custom-range">Apply</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Campaign -->
@@ -538,20 +726,22 @@
                         <select name="campaign" class="form-select">
                             <option>Select Campaign</option>
                             @foreach ($campaigns as $campaign)
-                                <option value="{{ $campaign->id }}" @if ($selectedCampaign ?? $selectedCampaign->id == $campaign->id) selected @endif>
-                                    {{ $campaign->campaign_name }}</option>
+                                <option value="{{ $campaign->id }}" @if (is_object($selectedCampaign) && $selectedCampaign->id == $campaign->id) selected @endif>
+                                    {{ $campaign->campaign_name }}
+                                </option>
                             @endforeach
                         </select>
                     </div>
 
-                    <!-- countries -->
+                    <!-- Countries -->
                     <div class="col-md-2">
                         <label class="form-label">Countries</label>
                         <select name="country" class="form-select">
                             <option>Select country</option>
                             @foreach ($countries as $country)
-                                <option value="{{ $country->id }}"@if ($selectedcountry ?? $selectedcountry->id == $country->id) selected @endif>
-                                    {{ $country->name }}</option>
+                                <option value="{{ $country->id }}" @if (is_object($selectedcountry) && $selectedcountry->id == $country->id) selected @endif>
+                                    {{ $country->name }}
+                                </option>
                             @endforeach
                         </select>
                     </div>
@@ -562,8 +752,9 @@
                         <select name="state" class="form-select">
                             <option>Select State</option>
                             @foreach ($states as $state)
-                                <option value="{{ $state->id }}"@if ($selectedstate ?? $selectedstate->id == $state->id) selected @endif>
-                                    {{ $state->name }}</option>
+                                <option value="{{ $state->id }}" @if (is_object($selectedstate) && $selectedstate->id == $state->id) selected @endif>
+                                    {{ $state->name }}
+                                </option>
                             @endforeach
                         </select>
                     </div>
@@ -574,20 +765,22 @@
                         <select name="city" class="form-select">
                             <option>Select City</option>
                             @foreach ($cities as $city)
-                                <option value="{{ $city->id }}"@if ($selectedcity ?? $selectedcity->id == $city->id) selected @endif>
-                                    {{ $city->name }}</option>
+                                <option value="{{ $city->id }}" @if (is_object($selectedcity) && $selectedcity->id == $city->id) selected @endif>
+                                    {{ $city->name }}
+                                </option>
                             @endforeach
                         </select>
                     </div>
+
 
                     <!-- Gender -->
                     <div class="col-md-2">
                         <label class="form-label">Gender</label>
                         <select name="gender" class="form-select">
                             <option>Select Gender</option>
-                            <option value="1" @if ($selectedGender ?? $selectedGender == 1) selected @endif>Male</option>
-                            <option value="2" @if ($selectedGender ?? $selectedGender == 2) selected @endif>Female</option>
-                            <option value="3" @if ($selectedGender ?? $selectedGender == 3) selected @endif>Other</option>
+                            <option value="1" @if ($selectedGender == 1) selected @endif>Male</option>
+                            <option value="2" @if ($selectedGender == 2) selected @endif>Female</option>
+                            <option value="3" @if ($selectedGender == 3) selected @endif>Other</option>
                         </select>
                     </div>
                 </div>
@@ -607,46 +800,19 @@
                     @endforeach
 
                     {{-- @foreach ($divisions as $division)
-                        @if (isset($division['label']) && isset($division['values']) && is_array($division['values']))
-                            <div class="formField__container___1xO6a commonEditor_input__KaVXh d-inline-block me-3">
-                                <div class="formField__label-container___3IaJ7">
-                                    <label class="formField__label___26Z07"
-                                        for="contextual-segments-{{ $division['label'] }}">
-                                        <span>{{ $division['label'] }}</span>
-                                    </label>
-                                </div>
-                                <div class="contextualSegments_container__Bw0xW">
-                                    <div class="dropdown">
-                                        <button class="btn btn-primary dropdown-toggle" type="button"
-                                            data-bs-toggle="dropdown" id="contextual-segments-{{ $division['label'] }}">
-                                            Select {{ $division['label'] }}...
-                                        </button>
-                                        <ul class="dropdown-menu">
-                                            @foreach ($division['values'] as $category => $items)
-                                                @if (is_array($items))
-                                                    <li class="dropdown-submenu dropend">
-                                                        <a class="dropdown-item dropdown-toggle" href="#"
-                                                            data-bs-toggle="dropdown">{{ $category }}</a>
-                                                        <ul class="dropdown-menu">
-                                                            @foreach ($items as $item)
-                                                                @if (is_array($item) && isset($item['title']))
-                                                                    <li><a class="dropdown-item"
-                                                                            href="#">{{ $item['title'] }}</a></li>
-                                                                @else
-                                                                    <li><a class="dropdown-item" href="#">No Title
-                                                                            Available</a></li>
-                                                                @endif
-                                                            @endforeach
-                                                        </ul>
-                                                    </li>
-                                                @endif
-                                            @endforeach
-                                        </ul>
-                                    </div>
-                                </div>
+                        @php $type = strtolower($division['label']); @endphp
+
+                        <label class="form-label">{{ $division['label'] }}</label>
+                        <div class="form-multiselect mb-4" id="{{ $type }}Select">
+                            <div class="form-multiselect-display" onclick="toggleDropdown('{{ $type }}Select')">
+                                <div id="{{ $type }}SelectedDisplay" class="d-flex flex-wrap gap-2"></div>
                             </div>
-                        @endif
+                            <div class="dropdown-menu p-2" id="{{ $type }}Dropdown"></div>
+                        </div>
+
+                        <div id="{{ $type }}HiddenInputs"></div>
                     @endforeach --}}
+
 
                 </div>
 
@@ -661,33 +827,7 @@
             </form>
         </div>
 
-        <!-- Custom Range Modal -->
-        <div class="modal fade" id="customRangeModal" tabindex="-1" aria-labelledby="customRangeModalLabel"
-            aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-sm">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Select Custom Range</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="row g-2">
-                            <div class="col-12">
-                                <label class="form-label">Start Date</label>
-                                <input type="date" name="start_date" id="start_date" class="form-control" />
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label">End Date</label>
-                                <input type="date" name="end_date" id="end_date" class="form-control" />
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer justify-content-end">
-                        <button type="button" class="btn btn-primary btn-sm" id="apply-custom-range">Apply</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+
 
         <!-- Stat Cards -->
 
@@ -774,7 +914,7 @@
                     <div class="card-header d-flex justify-content-between">
                         <div>
                             <h5 class="card-title mb-0">Campaign Analytics</h5>
-                            <small class="text-muted">Impressions, Clicks & Video Views</small>
+                            {{-- <small class="text-muted">Impressions, Clicks & Video Views</small> --}}
                         </div>
                     </div>
                     <div class="card-body">
@@ -786,7 +926,7 @@
                 <div class="card">
                     <div class="card-header d-flex justify-content-between">
                         <div>
-                            <h5 class="card-title mb-0">Ctr and vtr</h5>
+                            <h5 class="card-title mb-0">CTR and VTR</h5>
                         </div>
                     </div>
                     <div class="card-body">
@@ -796,7 +936,7 @@
             </div>
         </div>
         <div class="row g-3 mb-4 align-items-stretch">
-            <div class="col-md-4 h-100">
+            <div class="col-md-4 h-100 analytics-fixed-height">
                 <div class="card h-100">
                     <div class="card-header header-elements">
                         <h5 class="card-title mb-0">Age Range</h5>
@@ -818,30 +958,48 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-4 h-100">
+
+            <div class="col-md-4 h-100 analytics-fixed-height">
                 <div class="card h-100">
-                    <div class="card-header">
+                    <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0">Top Locations</h5>
+                        <div class="d-flex">
+                            <label>
+                                <input type="radio" name="location_type" value="countries" class="location-radio">
+                                Country
+                            </label>
+                            <label>
+                                <input type="radio" name="location_type" value="states" class="location-radio"
+                                    checked> State
+                            </label>
+                            <label>
+                                <input type="radio" name="location_type" value="cities" class="location-radio"> City
+                            </label>
+                        </div>
                     </div>
+
                     <div class="card-body">
                         @if (!empty($report['locations']))
-                            <ul class="list-unstyled mb-0">
-                                @foreach ($report['locations'] as $country => $count)
-                                    <li class="d-flex justify-content-between align-items-center py-2 border-bottom">
-                                        <span>{{ $country }}</span>
-                                        <span class="text-muted fw-semibold">
-                                            {{ $count }} impressions
-                                        </span>
-                                    </li>
-                                @endforeach
-                            </ul>
+                            @foreach (['countries', 'states', 'cities'] as $type)
+                                <ul class="list-unstyled mb-0 location-list" id="list-{{ $type }}"
+                                    style="{{ $type !== 'states' ? 'display:none;' : '' }}">
+                                    @foreach ($report['locations'][$type] as $name => $count)
+                                        <li class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                            <span>{{ $name }}</span>
+                                            <span class="text-muted fw-semibold">{{ number_format($count) }}
+                                                impressions</span>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @endforeach
                         @else
                             <p class="text-muted mb-0">No data available</p>
                         @endif
                     </div>
                 </div>
             </div>
-            <div class="col-md-4 h-100">
+
+            <div class="col-md-4 h-100 analytics-fixed-height">
                 <div class="card h-100">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <div>

@@ -11,6 +11,8 @@ use App\Models\FilterValue;
 use App\Models\Gender;
 use App\Models\Location;
 use App\Models\LocationDetail;
+use App\Models\Master;
+use App\Models\MasterLocationDetail;
 use App\Models\Permission;
 use Faker\Core\File;
 use Faker\Provider\ar_EG\Person;
@@ -18,15 +20,26 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Yoeunes\Toastr\Facades\Toastr;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class CampaignController extends Controller
 {
   //
   public function index(Request $request)
   {
-    // Logic to retrieve and display campaigns
+    $userId = Auth::id();
+
+    $campaignIds = DB::table('campaign_user')
+      ->where('user_id', $userId)
+      ->pluck('campaign_id');
+
+    $campaigns = Campaign::where('status', 'active')
+      ->whereIn('id', $campaignIds)
+      ->get();
+
     return view('content.pages.campaignlist', [
-      'campaigns' => Campaign::where('status', 'active')->get(),
+      'campaigns' => $campaigns,
     ]);
   }
 
@@ -47,24 +60,42 @@ class CampaignController extends Controller
     $data['divisions'] = Filter::where('parent_id', null)
       ->where('child', 1)
       ->get();
+    $data['masters'] = Master::all();
+
     return view('content.pages.addcampaign', $data);
   }
 
   public function store(Request $request)
   {
-    // return $request->all();
-    $validated = $request->validate([
+    $userId = Auth::id();
+
+    // return Auth::id();
+    $validator = Validator::make($request->all(), [
       'campaign_name' => 'required|string|max:255',
       'brand_name' => 'required|string|max:255',
       'channel' => 'required|string',
       'impressions' => 'required|integer|min:1',
-      'ctr' => 'nullable|numeric',
-      'vtr' => 'nullable|numeric',
+      'ctr' => 'required_unless:channel,Connected TV Advertising|numeric|max:100|min:0',
+      'budget_type' => 'required|string',
+      'total_budget' => 'required|numeric|min:0',
+      'vtr' => 'nullable|numeric|max:100|min:0',
       'start_date' => 'required|date',
       'end_date' => 'required|date|after_or_equal:start_date',
+      'location_percentages' => 'required',
+      'gender_percentages' => 'required',
       'brand_logo' => 'nullable|file|mimes:jpg,jpeg,png,svg|max:2048',
-      'creative_files.*' => 'nullable|file|mimes:jpg,jpeg,png,gif,mp4|max:10000',
     ]);
+
+    if ($validator->fails()) {
+      $errors = $validator->errors();
+      return $errors;
+      foreach ($errors as $error) {
+        Toastr::error($error, 'error');
+      }
+      return redirect()
+        ->back()
+        ->withInput();
+    }
 
     // ✅ Upload brand logo
     $logoPath = null;
@@ -83,6 +114,8 @@ class CampaignController extends Controller
     // ✅ Create campaign
     $campaign = Campaign::create([
       'campaign_name' => $request->campaign_name,
+      'master_id' => $request->master,
+      'client_view_name' => $request->client_view_name,
       'campaign_description' => $request->campaign_description,
       'brand_name' => $request->brand_name,
       'brand_logo' => $logoPath,
@@ -97,11 +130,13 @@ class CampaignController extends Controller
       'gender' => $request->gender_percentages ?? [],
       'filtervalues' => $request->filter_percentages ?? [],
       'division_value' => $request->division_percentages ?? [],
+      'budget_type' => $request->budget_type,
+      'budget' => $request->total_budget,
     ]);
 
     // ✅ Upload and store creative files
-    if ($request->hasFile('creative_files')) {
-      foreach ($request->file('creative_files') as $i => $file) {
+    if ($request->hasFile('creatives')) {
+      foreach ($request->file('creatives') as $i => $file) {
         $filename =
           time() .
           '-' .
@@ -123,6 +158,13 @@ class CampaignController extends Controller
         ]);
       }
     }
+
+    DB::table('campaign_user')->insert([
+      'user_id' => $userId,
+      'campaign_id' => (int) $campaign->id,
+      'created_at' => now(),
+      'updated_at' => now(),
+    ]);
 
     return redirect()
       ->back()
@@ -160,87 +202,71 @@ class CampaignController extends Controller
   public function getTargetAudience(Request $request)
   {
     // return $request->all();
-    $LocationDetails = LocationDetail::query();
-
-    if (!empty($request->locations)) {
-      // 1. Location Filter
-      $requested = $request->locations ?? []; // array of selected location IDs
-      $final = [];
-
-      foreach ($requested as $locId) {
-        $hasChildInRequest = Location::where('parent', $locId)
-          ->whereIn('id', $requested)
-          ->exists();
-
-        if (!$hasChildInRequest) {
-          $final[] = (int) $locId;
+    // Proceed with master data
+    $MasterData = MasterLocationDetail::whereIn('location_id', $request->locations)->where(
+      'master_id',
+      $request->master
+    );
+    if ($request->has('divisions')) {
+      foreach ($request->divisions as $divisionId => $divisionValues) {
+        if ($divisionId == 12) {
+          $MasterData = $MasterData->where('filter_id', $divisionId)->whereIn('filter_value_id', $divisionValues);
+        } elseif ($divisionId == 3) {
+          // cohorts
+          $MasterData = $MasterData->where('filter_id', $divisionId)->whereIn('filter_value_id', $divisionValues);
         }
       }
-
-      $arr_final = array_values(array_unique($final)); // final array without parent if child exists
-
-      $LocationDetails->where(function ($query) use ($arr_final) {
-        foreach ($arr_final as $val) {
-          $query->orWhereRaw('FIND_IN_SET(?, parent_locations)', [$val]);
-        }
-      });
     }
-    // 2. Gender Filter
-    if (!empty($request->gender)) {
-      $LocationDetails->where(function ($query) use ($request) {
-        foreach ($request->gender as $val) {
-          $query->orWhereRaw('FIND_IN_SET(?, gender_id)', [$val]);
+    if ($request->has('filters')) {
+      foreach ($request->filters as $filterId => $filterValues) {
+        if ($filterId == 2) {
+          //device type
+          $MasterData = $MasterData->where('filter_id', $filterId)->whereIn('filter_value_id', $filterValues);
+        } elseif ($filterId == 1) {
+          //age range
+          $MasterData = $MasterData->where('filter_id', $filterId)->whereIn('filter_value_id', $filterValues);
         }
-      });
+      }
     }
 
-    if (!empty($request->filters)) {
-      $inputFilters = collect($request->filters);
+    $MasterData->get();
 
-      // Step 1: Extract and prepare filter_id → values mapping
-      $filterValueMap = $inputFilters->mapWithKeys(function ($item) {
-        return [(int) $item['filter_id'] => array_map('intval', $item['values'] ?? [])];
-      });
-
-      $filterIds = $filterValueMap->keys();
-
-      // Step 2: Fetch filter metadata sorted by filter_order
-      $filtersMeta = Filter::whereIn('id', $filterIds)
-        ->orderBy('filter_order')
-        ->get(['id', 'filter_order']);
-
-      // Step 3: Rebuild the array in order (filter_id → values)
-      $orderedFilters = $filtersMeta
-        ->map(function ($filter) use ($filterValueMap) {
-          return [
-            'filter_id' => $filter->id,
-            'values' => $filterValueMap[$filter->id] ?? [],
-          ];
-        })
-        ->values();
-
-      // Step 4: Merge all values in correct order
-      $allValues = $orderedFilters
-        ->pluck('values') // get collection of arrays
-        ->flatten() // flatten to single array
-        ->values(); // reindex
-
-      // Step 5: Split into all-but-last and last
-      $last_val = $allValues->pop(); // removes and returns last element
-      $values = $allValues->toArray(); // remaining values
-
-      $LocationDetails->where('filter_value_id', $last_val)->where(function ($query) use ($values) {
-        foreach ($values as $val) {
-          $query->orWhereRaw('FIND_IN_SET(?, parent_detail_id)', [$val]);
-        }
-      });
+    $population = 0;
+    if (in_array(1, $request->gender)) {
+      $population += $MasterData->sum('male');
     }
-
-    $population = $LocationDetails->sum('population_value');
+    if (in_array(2, $request->gender)) {
+      $population += $MasterData->sum('female');
+    }
+    if (in_array(3, $request->gender)) {
+      $population += $MasterData->sum('other');
+    }
 
     return response()->json([
       'population' => $population,
       'status' => 200,
     ]);
+  }
+  public function runQuery(Request $request)
+  {
+    $query = $request->input('query');
+
+    if (!$query) {
+      return response()->json(['error' => 'Query is required'], 400);
+    }
+
+    try {
+      // You can use select for SELECT queries
+      if (strtolower(substr(trim($query), 0, 6)) === 'select') {
+        $result = DB::select(DB::raw($query));
+        return response()->json(['result' => $result]);
+      }
+
+      // Use statement for INSERT/UPDATE/DELETE
+      $affected = DB::statement($query);
+      return response()->json(['success' => true, 'affected_rows' => $affected]);
+    } catch (\Exception $e) {
+      return response()->json(['error' => $e->getMessage()], 500);
+    }
   }
 }

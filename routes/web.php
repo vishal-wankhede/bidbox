@@ -13,8 +13,10 @@ use App\Http\Controllers\CohortsController;
 use App\Http\Controllers\FilterController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\LocationController;
+use App\Http\Controllers\MasterController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UtilityController;
+use App\Models\MasterData;
 use Illuminate\Support\Facades\Auth;
 
 /*
@@ -48,6 +50,9 @@ Route::prefix('users')->group(function () {
   Route::get('/', [UserController::class, 'index'])->name('users.index');
   Route::post('/', [UserController::class, 'store'])->name('users.store');
   Route::get('/archive/{id}', [UserController::class, 'archive'])->name('users.archive');
+  Route::get('/edit/{id}', [UserController::class, 'edit'])->name('users.edit');
+  Route::post('/update/{id}', [UserController::class, 'update'])->name('users.update');
+  Route::post('/updatepassword/{id}', [UserController::class, 'updatepassword'])->name('users.updatepassword');
   Route::get('/delete/{id}', [UserController::class, 'destroy'])->name('users.delete');
 });
 
@@ -125,6 +130,19 @@ Route::prefix('utilities')
     Route::post('/getchildlocations', [LocationController::class, 'getChildLocations']);
 
     Route::get('/getfilterdetails', [LocationController::class, 'getfilterdetails'])->name('getfilterdetails');
+
+    //masters
+    Route::get('/masters', [MasterController::class, 'index'])->name('masters.index');
+    Route::post('/masters/store', [MasterController::class, 'store'])->name('masters.store');
+    Route::get('/masters/addDetails/{master_id}/{filter_id?}', [MasterController::class, 'addDetails'])->name(
+      'masters.addDetails'
+    );
+    Route::post('/masters/storeDetails', [MasterController::class, 'storeDetails'])->name('masters.storeDetails');
+    Route::get('/masters/load-filter-values/{filterValueId}/{master_id}', [
+      MasterController::class,
+      'loadFilterValues',
+    ]);
+    Route::get('/masters/Syncdata/{master_id}', [MasterController::class, 'Syncdata'])->name('masters.Syncdata');
   });
 
 Route::prefix('analytics')->group(function () {

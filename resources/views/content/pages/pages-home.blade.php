@@ -5,10 +5,31 @@
 @extends('layouts/layoutMaster')
 
 @section('title', 'Home')
+@section('vendor-style')
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/datatables-checkboxes-jquery/datatables.checkboxes.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/@form-validation/umd/styles/index.min.css') }}" />
 
+@endsection
+
+@section('vendor-script')
+    <script src="{{ asset('assets/vendor/libs/moment/moment.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/select2/select2.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/@form-validation/umd/bundle/popular.min.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/@form-validation/umd/plugin-bootstrap5/index.min.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/@form-validation/umd/plugin-auto-focus/index.min.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/cleavejs/cleave.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/cleavejs/cleave-phone.js') }}"></script>
+@endsection
 @section('content')
-    <h4>Dashboard</h4>
-
+    <div class="d-flex justify-content-between">
+        <h4>Dashboard</h4>
+        <a href="{{ route('campaign.add') }}" class="btn btn-primary"><i class="mdi mdi-plus"></i> Create Campaign</a>
+    </div>
     {{-- campaign stats --}}
     <div class="row">
         <div class="col-sm-6 col-lg-4 mb-4">
@@ -55,7 +76,7 @@
         </div>
     </div>
 
-        {{-- user stats --}}
+    {{-- user stats --}}
     <div class="row">
         <div class="col-sm-6 col-lg-4 mb-4">
             <div class="card card-border-shadow-success h-100">
