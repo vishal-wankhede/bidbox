@@ -4,7 +4,6 @@
     }
 </style>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <!-- Add User Modal -->
 <div class="modal fade" id="addUserModal" tabindex="-1" aria-hidden="true">
@@ -13,7 +12,7 @@
             <div class="modal-body p-0">
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 <div class="text-center mb-4">
-                    <h4 class="user-title mb-2 pb-0">vishskasd</h4>
+                    <h4 class="user-title mb-2 pb-0">Add New User</h4>
                     <p>Fill in user details and assign permissions</p>
                 </div>
 
@@ -111,19 +110,6 @@
                         <h5>Assign Permissions</h5>
                         @include('_partials.permissions') <!-- Keep your existing permissions table here -->
                     </div>
-                    <div class="col-12 mt-3" id="campaignListContainer" style="display: none;">
-                    @if(count($campaigns))
-                        <label for="campaigns">Select Campaigns:</label>
-                        <select name="campaigns[]" id="campaigns" class="form-control" multiple>
-                            @foreach($campaigns as $campaign)
-                                <option value="{{ $campaign->id }}">{{ $campaign->campaign_name }}</option>
-                            @endforeach
-                        </select>
-                    @else
-                        <p>No campaigns available</p>
-                    @endif
-                </div>
-
 
                     <div class="col-12 text-center">
                         <button type="submit" class="btn btn-primary me-2">Submit</button>
@@ -137,30 +123,3 @@
     </div>
 </div>
 <!--/ Add User Modal -->
-
-<script>
-    $(document).ready(function () {
-        $('#addUserModal').on('shown.bs.modal', function () {
-            $('#campaigns').select2({
-                placeholder: "Select Campaigns",
-                width: '100%',
-                dropdownParent: $('#addUserModal') // Ensures dropdown appears inside modal
-            });
-        });
-    });
-document.addEventListener('DOMContentLoaded', function () {
-    const analyticsCheckbox = document.getElementById('perm_5'); // Use ID instead of value
-    const campaignContainer = document.getElementById('campaignListContainer');
-
-    if (analyticsCheckbox) {
-        analyticsCheckbox.addEventListener('change', function () {
-            campaignContainer.style.display = this.checked ? 'block' : 'none';
-        });
-
-        // Show on load if already checked
-        if (analyticsCheckbox.checked) {
-            campaignContainer.style.display = 'block';
-        }
-    }
-});
-</script>
