@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 /.phpunit.cache
 /node_modules
 
@@ -14,32 +13,10 @@
 /index.php
 /bootstrap/cache
 # .env
-=======
-/vendor/
-node_modules/
-npm-debug.log
-yarn-error.log
-
-# Laravel 4 specific
-bootstrap/compiled.php
-app/storage/
-
-# Laravel 5 & Lumen specific
-public/storage
-public/uploads
-public/hot
-
-# Laravel 5 & Lumen specific with changed public path
-public_html/storage
-public_html/hot
-
-storage/*.key
->>>>>>> 8ecc85ec2fb9a7f7e6b352750a47589f9882aaba
 .env
 .env.backup
 .env.production
 .phpunit.result.cache
-<<<<<<< HEAD
 
 docker-compose.override.yml
 
@@ -69,16 +46,3 @@ yarn-error.log
 .env
 .phpunit.result.cache
 .phpunit.xml
-=======
-.phpunit.cache
-
-Homestead.yaml
-Homestead.json
-
-/.vagrant
-/.fleet
-/.idea
-/.vscode
-.phpactor.json
-auth.json
->>>>>>> 8ecc85ec2fb9a7f7e6b352750a47589f9882aaba

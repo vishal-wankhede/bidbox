@@ -62,7 +62,6 @@ $customizerHidden = 'customizer-hide';
                     <h4 class="mb-2">Welcome to {{ config('variables.templateName') }}! 👋</h4>
                     <p class="mb-4">Please sign-in to your account and start the adventure</p>
 
-<<<<<<< HEAD
                     <form id="formAuthentication" class="mb-3" action="{{ route('auth-login-post') }}" method="Post">
                         @csrf
                         <div class="form-floating form-floating-outline mb-3">
@@ -99,58 +98,6 @@ $customizerHidden = 'customizer-hide';
                             <button class="btn btn-primary d-grid w-100" type="submit">Sign in</button>
                         </div>
                     </form>
-=======
-                    <form id="formAuthentication" class="mb-3" action="{{ route('auth-login-post') }}" method="POST">
-                @csrf
-
-                {{-- Show error messages --}}
-                
-
-                <div class="form-floating form-floating-outline mb-3">
-                    <input type="text" class="form-control" id="email" name="email"
-                        placeholder="Enter your email" value="{{ old('email') }}" autofocus>
-                    <label for="email">Email</label>
-                </div>
-
-                <div class="mb-3">
-                    <div class="form-password-toggle">
-                        <div class="input-group input-group-merge">
-                            <div class="form-floating form-floating-outline">
-                                <input type="password" id="password" class="form-control" name="password"
-                                    placeholder="••••••••••••" aria-describedby="password" />
-                                <label for="password">Password</label>
-                            </div>
-                            <span class="input-group-text cursor-pointer">
-                                <i class="mdi mdi-eye-off-outline"></i>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-                @if ($errors->any())
-                    <div class="alert alert-danger">
-                        <ul class="mb-0">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
-
-                <div class="mb-3 d-flex justify-content-between">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="remember-me">
-                        <label class="form-check-label" for="remember-me">
-                            Remember Me
-                        </label>
-                    </div>
-                </div>
-
-                <div class="mb-3">
-                    <button class="btn btn-primary d-grid w-100" type="submit">Sign in</button>
-                </div>
-            </form>
-
->>>>>>> 8ecc85ec2fb9a7f7e6b352750a47589f9882aaba
                     <!-- 
                     <div class="divider my-4">
                         <div class="divider-text">or</div>

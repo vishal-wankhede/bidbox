@@ -28,11 +28,7 @@
 @section('content')
     <div class="d-flex justify-content-between">
         <h4>Dashboard</h4>
-<<<<<<< HEAD
         <a href="{{ route('campaign.add') }}" class="btn btn-primary"><i class="mdi mdi-plus"></i> Create Campaign</a>
-=======
-        <!-- <a href="{{ route('campaign.add') }}" class="btn btn-primary"><i class="mdi mdi-plus"></i> Create Campaign</a> -->
->>>>>>> 8ecc85ec2fb9a7f7e6b352750a47589f9882aaba
     </div>
     {{-- campaign stats --}}
     <div class="row">
@@ -82,11 +78,7 @@
 
     {{-- user stats --}}
     <div class="row">
-<<<<<<< HEAD
         <div class="col-sm-6 col-lg-4 mb-4">
-=======
-        <!-- <div class="col-sm-6 col-lg-4 mb-4">
->>>>>>> 8ecc85ec2fb9a7f7e6b352750a47589f9882aaba
             <div class="card card-border-shadow-success h-100">
                 <div class="card-body">
                     <div class="d-flex align-items-center mb-2 pb-1">
@@ -127,10 +119,6 @@
                     <h5 class="mb-0 text-heading">Total Clients</h5>
                 </div>
             </div>
-<<<<<<< HEAD
         </div>
-=======
-        </div> -->
->>>>>>> 8ecc85ec2fb9a7f7e6b352750a47589f9882aaba
     </div>
 @endsection

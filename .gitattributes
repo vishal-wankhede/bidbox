@@ -9,7 +9,6 @@
 /.github export-ignore
 CHANGELOG.md export-ignore
 .styleci.yml export-ignore
-<<<<<<< HEAD
 
 
 ## GITATTRIBUTES FOR WEB PROJECTS
@@ -219,5 +218,3 @@ Procfile          text
 
 # Ignore files (like .npmignore or .gitignore)
 *.*ignore         text
-=======
->>>>>>> 8ecc85ec2fb9a7f7e6b352750a47589f9882aaba

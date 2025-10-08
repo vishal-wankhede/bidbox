@@ -4,17 +4,10 @@
     </IfModule>
 
     RewriteEngine On
-<<<<<<< HEAD
     RewriteBase /bidbox/
 
     # 🔁 Rewrite /assets/* to /bidbox/public/assets/*
     RewriteCond %{REQUEST_URI} ^/bidbox/assets/
-=======
-    RewriteBase /
-
-    # 🔁 Rewrite /assets/* to /public/assets/*
-    RewriteCond %{REQUEST_URI} ^/assets/
->>>>>>> 8ecc85ec2fb9a7f7e6b352750a47589f9882aaba
     RewriteRule ^assets/(.*)$ public/assets/$1 [L]
 
     # Handle Authorization Header
@@ -30,8 +23,4 @@
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
-<<<<<<< HEAD
 </IfModule>
-=======
-</IfModule>
->>>>>>> 8ecc85ec2fb9a7f7e6b352750a47589f9882aaba

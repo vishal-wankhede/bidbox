@@ -855,13 +855,7 @@
                             <span class="fw-semibold text-muted">CTR</span>
                             <i class="bi bi-cursor fs-5 text-secondary"></i>
                         </div>
-<<<<<<< HEAD
                         <h4 class="mb-1">{{ $report['ctr'] }}%</h4>
-=======
-                        <!-- <h4 class="mb-1">{{ $report['ctr'] }}%</h4> -->
-
-                        <h4 class="mb-1">0.85%</h4>
->>>>>>> 8ecc85ec2fb9a7f7e6b352750a47589f9882aaba
                         <small class="text-muted">+0.8% vs prev period</small>
                     </div>
                 </div>
@@ -891,15 +885,8 @@
                                 <span class="fw-semibold text-muted">VTR</span>
                                 <i class="bi bi-play-btn fs-5 text-secondary"></i>
                             </div>
-<<<<<<< HEAD
                             <h4 class="mb-1">{{ $report['vtr'] }}%</h4>
                             <small class="text-muted">+5.2% vs prev period</small>
-=======
-                            <!-- <h4 class="mb-1">{{ $report['vtr'] }}%</h4> -->
-                                                        <h4 class="mb-1">0.9%</h4>
-
-                                <small class="text-muted">+5.2% vs prev period</small>
->>>>>>> 8ecc85ec2fb9a7f7e6b352750a47589f9882aaba
                         </div>
                     </div>
                 </div>
@@ -987,19 +974,11 @@
                             </label>
                             <label>
                                 <input type="radio" name="location_type" value="cities" class="location-radio"> City
-<<<<<<< HEAD
                             </label>
-=======
-                             </label>
->>>>>>> 8ecc85ec2fb9a7f7e6b352750a47589f9882aaba
                         </div>
                     </div>
 
                     <div class="card-body">
-<<<<<<< HEAD
-=======
-                        {{\Log::info($report['locations'])}}
->>>>>>> 8ecc85ec2fb9a7f7e6b352750a47589f9882aaba
                         @if (!empty($report['locations']))
                             @foreach (['countries', 'states', 'cities'] as $type)
                                 <ul class="list-unstyled mb-0 location-list" id="list-{{ $type }}"
@@ -1063,12 +1042,7 @@
                                         <tr>
                                             <td class="text-capitalize">{{ $name }}</td>
                                             <td>{{ $data['impressions'] }}</td>
-<<<<<<< HEAD
                                             <td>{{ $data['ctr'] ?? '-' }}%</td>
-=======
-                                             <td>0.91%</td>
-                                            <!-- <td>{{ $data['ctr'] ?? '-' }}%</td> -->
->>>>>>> 8ecc85ec2fb9a7f7e6b352750a47589f9882aaba
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -1105,12 +1079,7 @@
                                         <tr>
                                             <td class="text-capitalize">{{ $name }}</td>
                                             <td>{{ $data['impressions'] }}</td>
-<<<<<<< HEAD
                                             <td>{{ $data['ctr'] ?? '-' }}%</td>
-=======
-                                            <!-- <td>{{ $data['ctr'] ?? '-' }}%</td> -->
-                                              <td>0.85%</td>
->>>>>>> 8ecc85ec2fb9a7f7e6b352750a47589f9882aaba
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -1143,17 +1112,10 @@
                                                     class="fallback-thumbnail img-fluid rounded w-100"
                                                     style="height: 180px; object-fit: cover; display: none;">
 
-<<<<<<< HEAD
                                                 <div
                                                     class="video-overlay position-absolute top-50 start-50 translate-middle text-center bg-dark bg-opacity-50 text-white py-1 px-2 rounded">
                                                     Video is not supported
                                                 </div>
-=======
-                                                <!-- <div
-                                                    class="video-overlay position-absolute top-50 start-50 translate-middle text-center bg-dark bg-opacity-50 text-white py-1 px-2 rounded">
-                                                    Video is not supported
-                                                </div> -->
->>>>>>> 8ecc85ec2fb9a7f7e6b352750a47589f9882aaba
                                             </div>
                                         @else
                                             <img src="{{ url('public/' . $creative['file_path']) }}" alt="Creative Asset"
@@ -1168,23 +1130,11 @@
                                         </div>
                                         <div class="d-flex justify-content-between mb-1">
                                             <span class="text-dark fw-medium">CTR:</span>
-<<<<<<< HEAD
                                             <span class="text-dark fw-medium">{{ $creative['ctr'] }}%</span>
                                         </div>
                                         <div class="d-flex justify-content-between">
                                             <span class="text-dark fw-medium">VTR:</span>
                                             <span class="text-dark fw-medium">{{ $creative['vtr'] }}%</span>
-=======
-                                            <!-- <span class="text-dark fw-medium">{{ $creative['ctr'] }}%</span> -->
-                                            <span class="text-dark fw-medium">0.41%</span>
-
-                                        </div>
-                                        <div class="d-flex justify-content-between">
-                                            <span class="text-dark fw-medium">VTR:</span>
-                                            <!-- <span class="text-dark fw-medium">{{ $creative['vtr'] }}%</span> -->
-                                            <span class="text-dark fw-medium">0.1%</span>
-
->>>>>>> 8ecc85ec2fb9a7f7e6b352750a47589f9882aaba
                                         </div>
                                     </div>
                                 </div>
