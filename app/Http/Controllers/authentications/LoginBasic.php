@@ -62,7 +62,7 @@ public function login(Request $request)
     // If login failed
     return back()
         ->withInput($request->only('email'))
-        ->with('error', 'Invalid email or password. Please try again.');clea
+        ->with('error', 'Invalid email or password. Please try again.');
 }
 
 
