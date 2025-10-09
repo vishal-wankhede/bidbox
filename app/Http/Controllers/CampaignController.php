@@ -179,7 +179,7 @@ class CampaignController extends Controller
       return redirect()->back();
     }
     if ($campaign->status == 'active') {
-      $campaign->status = 'archive';
+      $campaign->status = 'archived';
       $campaign->save();
       Toastr::success('Campaign archived successfully', 'success');
       return redirect()->back();
