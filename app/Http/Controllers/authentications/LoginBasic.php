@@ -61,10 +61,8 @@ public function login(Request $request)
 
     // If login failed
     return back()
-        ->withErrors([
-            'email' => 'Incorrect email or password.',
-        ])
-        ->withInput();
+        ->withInput($request->only('email'))
+        ->with('error', 'Invalid email or password. Please try again.');clea
 }
 
 
