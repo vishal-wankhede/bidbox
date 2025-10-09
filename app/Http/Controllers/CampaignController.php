@@ -69,6 +69,11 @@ class CampaignController extends Controller
   {
     $userId = Auth::id();
 
+    if (!$userId) {
+        Toastr::error('You must be logged in to create a campaign.', 'error');
+        return redirect()->back()->withInput();
+    }
+
     // return Auth::id();
     $validator = Validator::make($request->all(), [
       'campaign_name' => 'required|string|max:255',
@@ -86,15 +91,12 @@ class CampaignController extends Controller
       'brand_logo' => 'nullable|file|mimes:jpg,jpeg,png,svg|max:2048',
     ]);
 
-    if ($validator->fails()) {
-      $errors = $validator->errors();
-      return $errors;
-      foreach ($errors as $error) {
-        Toastr::error($error, 'error');
-      }
-      return redirect()
-        ->back()
-        ->withInput();
+   if ($validator->fails()) {
+        $errors = $validator->errors();
+        foreach ($errors->all() as $error) {
+            Toastr::error($error, 'error');
+        }
+        return redirect()->back()->withInput();
     }
 
     // ✅ Upload brand logo
