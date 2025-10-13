@@ -56,14 +56,16 @@ Route::prefix('users')->group(function () {
   Route::get('/delete/{id}', [UserController::class, 'destroy'])->name('users.delete');
 });
 
+// campaign Routes
 Route::prefix('campaign')->group(function () {
   Route::get('/', [CampaignController::class, 'index'])->name('campaign.index');
   Route::get('/add', [CampaignController::class, 'add'])->name('campaign.add');
   Route::get('/getarchive', [CampaignController::class, 'getarchive'])->name('campaign.getarchive');
   Route::post('/', [CampaignController::class, 'store'])->name('campaign.store');
   Route::get('/archive/{id}', [CampaignController::class, 'archive'])->name('campaign.archive');
-  Route::get('/delete/{id}', [CampaignController::class, 'destroy'])->name('campaign.delete');
   Route::get('getTargetAudience', [CampaignController::class, 'getTargetAudience'])->name('getTargetAudience');
+  Route::post('/{id}', [CampaignController::class, 'destroy'])->name('campaign.destroy'); // Delete
+  // Route::get('/{id}/edit', [CampaignController::class, 'edit'])->name('campaigns.edit');   // Edit
 });
 
 // Utilities Routes

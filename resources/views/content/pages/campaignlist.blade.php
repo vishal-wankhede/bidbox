@@ -66,12 +66,22 @@ $configData = Helper::appClasses();
                     <td>{{ $campaign->impressions }}</td>
                     <td>{{ $campaign->ctr }}</td>
                     <td>{{ $campaign->vtr }}</td>
-                    <td>
-                        <a href="{{ route('campaign.archive', $campaign->id) }}"><i
-                                class="mdi mdi-archive-outline me-2"></i></a>
-                        <a href="#"><i class="mdi mdi-delete-outline"></i></a>
-                        <a href="#"><i class="mdi mdi-pencil-outline"></i></a>
-                    </td>
+                   <td>
+                      <a href="{{ route('campaign.archive', $campaign->id) }}">
+                          <i class="mdi mdi-archive-outline me-2"></i>
+                      </a>
+
+                      <form action="{{ route('campaign.destroy', $campaign->id) }}" method="POST" class="d-inline">
+                          @csrf
+                          <button type="submit" class="btn btn-link text-danger p-0 border-0">
+                              <i class="mdi mdi-delete-outline"></i>
+                          </button>
+                      </form>
+
+                      <a href="#">
+                          <i class="mdi mdi-pencil-outline"></i>
+                      </a>
+                  </td>
                 </tr>
                 @endforeach
 

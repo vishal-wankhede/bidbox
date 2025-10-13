@@ -194,12 +194,21 @@ class CampaignController extends Controller
     return redirect()->back();
   }
 
-  public function destroy(Request $request, $id)
-  {
-    // Logic to delete a campaign
-    // Find the campaign by ID and delete it
-    return redirect()->back();
-  }
+ public function destroy($id)
+    {
+        $campaign = Campaign::findOrFail($id);
+        $campaign->delete();
+
+        Toastr::success('Campaign deleted successfully.');
+        return redirect()->back();
+    }
+
+    // public function edit($id)
+    // {
+    //     $campaign = Campaign::findOrFail($id);
+    //     return view('campaigns.edit', compact('campaign'));
+    // }
+
 
   public function getTargetAudience(Request $request)
   {
