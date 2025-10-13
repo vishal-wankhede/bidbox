@@ -46,7 +46,7 @@ class CampaignController extends Controller
   public function getarchive(Request $request)
   {
     return view('content.pages.archivedcampaign', [
-      'campaigns' => Campaign::where('status', 'archive')->get(),
+      'campaigns' => Campaign::where('status', 'archived')->get(),
     ]);
   }
 
