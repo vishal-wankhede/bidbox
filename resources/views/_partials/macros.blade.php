@@ -21,5 +21,5 @@ $withbg = $withbg ?? '#666cff';
       </linearGradient>
     </defs>
   </svg> -->
-  <img src="{{asset('public\assets\img\app_logo\logo.png')}}" alt="" width="28" />
+  <img src="{{asset('assets/img/app_logo/logo.png')}}" alt="" width="28" />
 </span>
