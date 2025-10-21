@@ -76,8 +76,8 @@ class AnalyticsController extends Controller
       if ($request->type && $request->type !== 'Select Type') {
         $report = $report->where('report_type', $request->type);
       } else {
-        $report = $report->where('report_type', 'daily');
-      }
+        $report = $report->whereIn('report_type', ['daily', 'hourly']);
+       }
 
       $report = $report->orderBy('created_at', 'asc')->get();
 
